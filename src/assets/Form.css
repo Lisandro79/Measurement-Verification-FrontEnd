@@ -1,0 +1,9 @@
+.form-component{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.form-component-item{
+    flex: 50%;
+    margin-bottom: 30px;
+}

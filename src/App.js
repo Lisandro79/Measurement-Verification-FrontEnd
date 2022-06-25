@@ -1,27 +1,27 @@
 import React, { useState } from "react";
 import './assets/App.css';
 import Navbar from './components/Navbar';
-import BaselineReport from './components/BaselineReport';
+import BaselineReporting from './components/BaselineReporting';
 import Model from './components/Model';
 import ProjectInfo from './components/ProjectInfo';
 
 const App = () => {
 
   const [showProjectInfo, setShowProjectInfo] = useState(true);
-  const [showBaselineReport, setShowBaselineReport] = useState(false);
+  const [showBaselineReporting, setShowBaselineReporting] = useState(false);
   const [showModel, setShowModel] = useState(false);
-  const [buildingData, setBuildingData] = useState(null);
+  const [buildingData, setBuildingData] = useState([]);
   
 
 
   const clickProjectInfo = () => {
     setShowProjectInfo(true)
-    setShowBaselineReport(false)
+    setShowBaselineReporting(false)
     setShowModel(false)
   }
 
   const clickBaselineReport = () => {
-    setShowBaselineReport(true)
+    setShowBaselineReporting(true)
     setShowModel(false)
     setShowProjectInfo(false)
   }
@@ -29,14 +29,14 @@ const App = () => {
   const clickModel = () => {
     setShowModel(true)
     setShowProjectInfo(false)
-    setShowBaselineReport(false)
+    setShowBaselineReporting(false)
   }
 
   const getFormComponent = () => {
     if(showProjectInfo) 
     return <ProjectInfo></ProjectInfo>
-    if(showBaselineReport) 
-    return <BaselineReport setBuildingData={setBuildingData} buildingData={buildingData}></BaselineReport>
+    if(showBaselineReporting) 
+    return <BaselineReporting setBuildingData={setBuildingData} buildingData={buildingData}></BaselineReporting>
     if(showModel) 
     return <Model></Model>
   }
@@ -47,7 +47,7 @@ const App = () => {
       <Navbar></Navbar>
       <div className='tab-selector'>
       <button className={showProjectInfo ? 'active-button' : null} onClick={clickProjectInfo}>Project info</button>
-      <button className={showBaselineReport ? 'active-button' : null} onClick={clickBaselineReport}>Baseline & reporting</button>
+      <button className={showBaselineReporting ? 'active-button' : null} onClick={clickBaselineReport}>Baseline & reporting</button>
       <button className={showModel ? 'active-button' : null} onClick={clickModel}>Model</button>
       </div>
       <div className='form'>

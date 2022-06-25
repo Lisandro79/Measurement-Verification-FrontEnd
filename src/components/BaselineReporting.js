@@ -1,13 +1,13 @@
-//import './BaselineReport.css';
+//import './BaselineReporting.css';
 import React, { useEffect, useState } from "react";
 var csv = require('jquery-csv');
-//var csv = require('jquery-csv');
 //import * as d3 from "d3";
 
-const BaselineReport = ({setBuildingData, buildingData}) => {
+const BaselineReporting = ({setBuildingData, buildingData}) => {
 
   useEffect(() => {
-  }, []);
+    console.log(buildingData);
+  }, [buildingData]);
 
   
   const handleFileChange = (e) => {
@@ -15,7 +15,6 @@ const BaselineReport = ({setBuildingData, buildingData}) => {
 
     let reader = new FileReader()
     reader.onload = function () {
-      setBuildingData(reader.result)
       processData(reader.result)
     };
     reader.readAsBinaryString(e.target.files[0])
@@ -25,22 +24,22 @@ const BaselineReport = ({setBuildingData, buildingData}) => {
 
     let dataCsv = csv.toArrays(data);
 
-    let baselineDate, baselineEload, baselineTemp = []
+    let date = []
+    let eload = []
+    let temp = []
     
     dataCsv.forEach(element => {
-      baselineDate.push(element[0])
-      baselineEload.push(element[1])
-      baselineTemp.push(element[2])
+      date.push(element[0])
+      eload.push(element[1])
+      temp.push(element[2])
     });
 
-    baselineDate.shift()
-    baselineEload.shift()
-    baselineTemp.shift()
+    //deletes column name
+    date.shift()
+    eload.shift()
+    temp.shift()
 
-    let d = {
-      date: baselineDate,
-      value: baselineEload
-    }
+    setBuildingData([date, eload, temp])
 
   }
 
@@ -86,4 +85,4 @@ const BaselineReport = ({setBuildingData, buildingData}) => {
   );
 }
 
-export default BaselineReport;
+export default BaselineReporting;

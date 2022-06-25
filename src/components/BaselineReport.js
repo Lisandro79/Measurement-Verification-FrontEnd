@@ -1,13 +1,15 @@
 //import './BaselineReport.css';
-
-//import * as CSV from 'csv-string';
-
+import React, { useEffect, useState } from "react";
+var csv = require('jquery-csv');
+//var csv = require('jquery-csv');
+//import * as d3 from "d3";
 
 const BaselineReport = ({setBuildingData, buildingData}) => {
 
+  useEffect(() => {
+  }, []);
 
-  var csv = require('jquery-csv');
-
+  
   const handleFileChange = (e) => {
     e.preventDefault()
 
@@ -16,17 +18,14 @@ const BaselineReport = ({setBuildingData, buildingData}) => {
       setBuildingData(reader.result)
       processData(reader.result)
     };
-    reader.readAsBinaryString(e.target.files[0])    
+    reader.readAsBinaryString(e.target.files[0])
   }
 
   const processData = (data) => {
 
     let dataCsv = csv.toArrays(data);
 
-
-    let baselineDate = []
-    let baselineEload = []
-    let baselineTemp = []
+    let baselineDate, baselineEload, baselineTemp = []
     
     dataCsv.forEach(element => {
       baselineDate.push(element[0])
@@ -38,9 +37,10 @@ const BaselineReport = ({setBuildingData, buildingData}) => {
     baselineEload.shift()
     baselineTemp.shift()
 
-    console.log(baselineDate);
-    console.log(baselineEload);
-    console.log(baselineTemp);
+    let d = {
+      date: baselineDate,
+      value: baselineEload
+    }
 
   }
 
@@ -81,13 +81,8 @@ const BaselineReport = ({setBuildingData, buildingData}) => {
     </div>
     <div className="form-component-item">
     </div>
-
-    
-
-
     <button>Model</button>
   </div>
-  
   );
 }
 

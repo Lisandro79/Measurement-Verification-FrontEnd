@@ -6,7 +6,7 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
-    "csv-string": "^4.1.0",
+    "d3": "^7.4.5",
     "jquery-csv": "^1.0.21",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",

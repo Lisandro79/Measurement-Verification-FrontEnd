@@ -12,8 +12,6 @@ const App = () => {
   const [showModel, setShowModel] = useState(false);
   const [buildingData, setBuildingData] = useState([]);
   
-
-
   const clickProjectInfo = () => {
     setShowProjectInfo(true)
     setShowBaselineReporting(false)

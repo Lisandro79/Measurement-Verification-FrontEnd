@@ -8,7 +8,6 @@ const BaselineReporting = ({ setBuildingData, buildingData }) => {
 
   useEffect(() => {
     createGraph()
-    //console.log(buildingData);
   }, [buildingData]);
 
 
@@ -17,12 +16,12 @@ const BaselineReporting = ({ setBuildingData, buildingData }) => {
 
     let reader = new FileReader()
     reader.onload = function () {
-      processData(reader.result)
+      validateData(reader.result)
     };
     reader.readAsBinaryString(e.target.files[0])
   }
 
-  const processData = (dataCsv) => {
+  const validateData = (dataCsv) => {
 
     let data = csv.toArrays(dataCsv);
 
@@ -41,46 +40,21 @@ const BaselineReporting = ({ setBuildingData, buildingData }) => {
     eload.shift()
     temp.shift()
 
-    let buildingData = {
-      date: date,
-      eload: eload,
-      temp: temp
-    }
+    setBuildingData([date, eload, temp])
 
-    //setBuildingData([date, eload, temp])
-    setBuildingData(buildingData)
-
-    //createGraph()
+    createGraph(dataCsv)
   }
 
-  const createGraph = async () => {
+  const createGraph = async (dataCsv) => {
 
-    
-    let data = await d3.csv('https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv')
-    let parseTime = d3.timeParse("%Y-%m-%d");
-    data.forEach((d) => {
-      d.date = parseTime(d.date);
-      d.value = +d.value;
-    });
-    console.log(data);
-    
+    let data = d3.csvParse(dataCsv)
 
-    /*
-    let data = buildingData
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
-    data[0].forEach((time) => {
-      time = parseTime(time)
+    data.forEach((d) => {
+      d.time = parseTime(d.time);
+      d.eload = +d.eload;
     });
-
-    data[1].forEach((eload) => {
-      eload = +eload
-    })
-
-    data[2].forEach((temp) => {
-      temp = +temp
-    })
-    */
 
     // set the dimensions and margins of the graph
     var margin = { top: 20, right: 20, bottom: 50, left: 70 },
@@ -98,11 +72,9 @@ const BaselineReporting = ({ setBuildingData, buildingData }) => {
     var x = d3.scaleTime().range([0, width]);
     var y = d3.scaleLinear().range([height, 0]);
 
-    x.domain(d3.extent(data, (d) => { return d.date }));
-    //x.domain(d3.extent(data[0]));
-    y.domain([0, d3.max(data, (d) => { return d.value })]);
-    //y.domain([0, d3.max(data[1])]);
-    
+    x.domain(d3.extent(data, (d) => { return d.time }));
+    y.domain([0, d3.max(data, (d) => { return d.eload })]);
+
     svg.append("g")
       .attr("transform", `translate(0, ${height})`)
       .call(d3.axisBottom(x));
@@ -112,12 +84,9 @@ const BaselineReporting = ({ setBuildingData, buildingData }) => {
 
     // add the Line
     var valueLine = d3.line()
-      .x((d) => { return x(d.date); })
-      .y((d) => { return y(d.value); });
-      //.x((d) => { return x(data[0]); })
-      //.y((d) => { return y(data[1]); });
+      .x((d) => { return x(d.time); })
+      .y((d) => { return y(d.eload); });
 
-    //console.log(typeof data);
     svg.append("path")
       .data([data])
       .attr("class", "line")

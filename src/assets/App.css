@@ -1,17 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Anek+Malayalam&display=swap');
 
-.App{
+button {
+  background-color: rgba(51, 51, 51, 0.05);
+  border-radius: 8px;
+  border-width: 0;
+  color: #333333;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px;
+  text-align: center;
+  transition: all 200ms;
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.App {
   font-family: 'Anek Malayalam', sans-serif;
   color: #212427;
 }
 
-.tab-selector{
+.tab-selector {
   margin-top: 100px;
   display: flex;
   justify-content: center
 }
 
-.tab-selector button  {
+.tab-selector button {
   align-items: center;
   background-color: rgba(240, 240, 240, 0.26);
   border: 1px solid #DFDFDF;
@@ -43,17 +65,14 @@
   border-color: rgba(0, 0, 0, 0.19);
 }
 
-.form{
+.form {
   width: 60rem;
   position: relative;
   margin: auto;
   max-width: 100%;
-  border-color: #CECECE;
-  border-width: 1px;
-  border-style: solid;
 }
 
-.active-button{
-  color: #308A4D !important;
-  border: 3px solid #DFDFDF !important;
+.active-button {
+  border: 3px solid #31AC9C !important;
 }
+

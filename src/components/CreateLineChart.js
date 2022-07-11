@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
-const PeriodChart = ({ inputCsv }) => {
-  let data = d3.csvParse(inputCsv);
+const CreateLineChart = ({ date_temp_eload_data }) => {
+  let data = d3.csvParse(date_temp_eload_data);
 
   let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
@@ -104,4 +104,4 @@ const PeriodChart = ({ inputCsv }) => {
     .attr("d", valueLine2);
 };
 
-export default PeriodChart;
+export default CreateLineChart;

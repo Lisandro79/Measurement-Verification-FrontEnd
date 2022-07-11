@@ -1,43 +1,45 @@
 // import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
-import PeriodChart from "./PeriodChart";
+import PeriodChart from "./CreateLineChart";
 
 const csv = require("jquery-csv");
 
-function BaselineReporting({ handleChange, onClickModel }) {
+function BaselineReporting({ projectData, handleChange, onClickModel }) {
   const [inputCsv, setInputCsv] = useState(null);
+  const [baseline, setBaseline] = useState(null);
+  const [reporting, setReporting] = useState(null);
 
   const handleFileChange = (e) => {
     e.preventDefault();
 
     const reader = new FileReader();
     reader.onload = function () {
-      validateData(reader.result);
+      validateFile(reader.result);
     };
     reader.readAsBinaryString(e.target.files[0]);
   };
 
-  const validateData = (inputCsv) => {
+  const validateFile = (inputCsv) => {
     // TO DO: validation steps
     const data = csv.toArrays(inputCsv);
 
-    const date = [];
-    const eload = [];
-    const temp = [];
+    const start_reporting = data.find(
+      (element) => element[0] === "1/1/20 0:00" //replace with start_reporting
+    );
 
-    data.forEach((element) => {
-      date.push(element[0]);
-      eload.push(element[1]);
-      temp.push(element[2]);
-    });
+    // let indexToSplit = data.indexOf(start_reporting);
+    // let baseline = data.slice(0, indexToSplit);
+    // let reporting = data.slice(indexToSplit + 1);
 
-    date.shift();
-    eload.shift();
-    temp.shift();
+    // console.log(inputCsv);
+    // console.log(data);
+    // console.log(baseline);
+    // console.log(reporting);
 
-    // TO DO: if validation steps ok, do sets
-    // setProjectData([date, eload, temp]); //for json
-    setInputCsv(inputCsv); // for d3 graph
+    // setBaseline(baseline);
+    // setReporting(reporting);
+
+    setInputCsv(inputCsv);
   };
 
   return (
@@ -75,12 +77,17 @@ function BaselineReporting({ handleChange, onClickModel }) {
       <div className="form-component-item test">
         <h3>Baseline period</h3>
         <p>Please check that the data for the baseline is correct</p>
-        {inputCsv ? <PeriodChart inputCsv={inputCsv} /> : null}
+        {inputCsv ? (
+          <PeriodChart period={inputCsv} projectData={projectData} />
+        ) : null}
       </div>
       <div className="form-component-item" />
       <div className="form-component-item">
         <h3>Reporting period</h3>
         <p>Please check if the data for the reporting period is correct</p>
+        {inputCsv ? (
+          <PeriodChart period={inputCsv} projectData={projectData} />
+        ) : null}
       </div>
       <div className="form-component-item" />
       <button onClick={onClickModel}>Model</button>

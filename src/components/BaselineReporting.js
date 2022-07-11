@@ -20,12 +20,20 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
   };
 
   const validateFile = (inputCsv) => {
-    // TO DO: validation steps
-    const data = csv.toArrays(inputCsv);
+    //let arr = inputCsv.split("1/1/20 0:00");
+    let testVar = "1/1/20 0:00";
+    const regex = new RegExp(`ReGeX${testVar}ReGeX`);
+    //let arr = inputCsv.split(/(?=1\/1\/20 0:00)/g);
+    let arr = inputCsv.split(testVar);
 
-    const start_reporting = data.find(
-      (element) => element[0] === "1/1/20 0:00" //replace with start_reporting
-    );
+    console.log(arr[0]);
+    console.log(arr[1]);
+
+    // const data = csv.toArrays(inputCsv);
+
+    // const start_reporting = data.find(
+    //   (element) => element[0] === "1/1/20 0:00" //replace with start_reporting
+    // );
 
     // let indexToSplit = data.indexOf(start_reporting);
     // let baseline = data.slice(0, indexToSplit);
@@ -36,8 +44,8 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
     // console.log(baseline);
     // console.log(reporting);
 
-    // setBaseline(baseline);
-    // setReporting(reporting);
+    //setBaseline(baseline);
+    //setReporting(reporting);
 
     setInputCsv(inputCsv);
   };
@@ -46,6 +54,14 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
     <div className="form-component">
       <h1>Baseline & reporting</h1>
       <div className="form-component-item" />
+      <div className="form-component-item">
+        <h3>Upload building data</h3>
+        <p>CSV specs</p>
+      </div>
+      <div className="form-component-item">
+        <p>Choose file</p>
+        <input type="file" accept=".csv" onChange={handleFileChange} />
+      </div>
       <div className="form-component-item">
         <p>
           <b>Baseline start date</b>
@@ -65,14 +81,6 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
           <b>Reporting end date</b>
         </p>
         <input type="date" onChange={handleChange} />
-      </div>
-      <div className="form-component-item">
-        <h3>Upload building data</h3>
-        <p>CSV specs</p>
-      </div>
-      <div className="form-component-item">
-        <p>Choose file</p>
-        <input type="file" accept=".csv" onChange={handleFileChange} />
       </div>
       <div className="form-component-item test">
         <h3>Baseline period</h3>

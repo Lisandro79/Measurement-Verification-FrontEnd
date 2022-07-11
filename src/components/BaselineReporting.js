@@ -20,34 +20,34 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
   };
 
   const validateFile = (inputCsv) => {
-    //let arr = inputCsv.split("1/1/20 0:00");
-    let testVar = "1/1/20 0:00";
-    const regex = new RegExp(`ReGeX${testVar}ReGeX`);
-    //let arr = inputCsv.split(/(?=1\/1\/20 0:00)/g);
-    let arr = inputCsv.split(testVar);
+    const data = csv.toArrays(inputCsv);
 
-    console.log(arr[0]);
-    console.log(arr[1]);
+    const start_reporting = data.find(
+      (element) => element[0] === "1/1/20 0:00" //replace with start_reporting
+    );
 
-    // const data = csv.toArrays(inputCsv);
+    let indexToSplit = data.indexOf(start_reporting);
+    let baseline = data.slice(0, indexToSplit);
+    let reporting = data.slice(indexToSplit + 1);
 
-    // const start_reporting = data.find(
-    //   (element) => element[0] === "1/1/20 0:00" //replace with start_reporting
-    // );
+    baseline = arrayToCsv(baseline);
 
-    // let indexToSplit = data.indexOf(start_reporting);
-    // let baseline = data.slice(0, indexToSplit);
-    // let reporting = data.slice(indexToSplit + 1);
+    reporting = arrayToCsv(reporting);
+    reporting = "time,eload,temp\n" + reporting;
 
-    // console.log(inputCsv);
-    // console.log(data);
-    // console.log(baseline);
-    // console.log(reporting);
+    setBaseline(baseline);
+    setReporting(reporting);
 
-    //setBaseline(baseline);
-    //setReporting(reporting);
+    //setInputCsv(reporting);
+  };
 
-    setInputCsv(inputCsv);
+  const arrayToCsv = (array) => {
+    var csv = array
+      .map(function (d) {
+        return d.join();
+      })
+      .join("\n");
+    return csv;
   };
 
   return (
@@ -82,19 +82,19 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
         </p>
         <input type="date" onChange={handleChange} />
       </div>
-      <div className="form-component-item test">
+      <div className="form-component-item baseline">
         <h3>Baseline period</h3>
         <p>Please check that the data for the baseline is correct</p>
-        {inputCsv ? (
-          <PeriodChart period={inputCsv} projectData={projectData} />
+        {baseline ? (
+          <PeriodChart period={baseline} htmlClass={"baseline"} />
         ) : null}
       </div>
       <div className="form-component-item" />
-      <div className="form-component-item">
+      <div className="form-component-item reporting">
         <h3>Reporting period</h3>
         <p>Please check if the data for the reporting period is correct</p>
-        {inputCsv ? (
-          <PeriodChart period={inputCsv} projectData={projectData} />
+        {reporting ? (
+          <PeriodChart period={reporting} htmlClass={"reporting"} />
         ) : null}
       </div>
       <div className="form-component-item" />

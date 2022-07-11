@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 
-const CreateLineChart = ({ period }) => {
+const PeriodChart = ({ period, htmlClass }) => {
   let data = d3.csvParse(period);
 
   let parseTime = d3.timeParse("%m/%d/%y %H:%M");
@@ -17,9 +17,9 @@ const CreateLineChart = ({ period }) => {
     height = 500 - margin.top - margin.bottom;
 
   // append the svg object to the body of the page
-  d3.select(".test").selectAll("svg").remove();
+  d3.select(`.${htmlClass}`).selectAll("svg").remove();
   let svg = d3
-    .select(".test")
+    .select(`.${htmlClass}`)
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -104,4 +104,4 @@ const CreateLineChart = ({ period }) => {
     .attr("d", valueLine2);
 };
 
-export default CreateLineChart;
+export default PeriodChart;

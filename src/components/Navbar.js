@@ -3,7 +3,7 @@ import "../assets/Navbar.css";
 
 function Navbar() {
   return (
-    <div className="Navbar">
+    <div className="navbar">
       <p>Measurement & Verification Calculator</p>
     </div>
   );

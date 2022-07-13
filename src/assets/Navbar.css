@@ -1,4 +1,4 @@
-.Navbar{
+.navbar{
     background-color: #dbdbdb;
     font-weight: bold;
     position: fixed; 
@@ -9,7 +9,7 @@
     z-index: 999;
 }
 
-.Navbar p{
+.navbar p{
     margin-left: 20px;
     font-size: large;
     letter-spacing: 0.5px;

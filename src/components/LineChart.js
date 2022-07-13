@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 
-const PeriodChart = ({ period, htmlClass }) => {
+const LineChart = ({ period, htmlClass }) => {
   let data = d3.csvParse(period);
 
   let parseTime = d3.timeParse("%m/%d/%y %H:%M");
@@ -104,4 +104,4 @@ const PeriodChart = ({ period, htmlClass }) => {
     .attr("d", valueLine2);
 };
 
-export default PeriodChart;
+export default LineChart;

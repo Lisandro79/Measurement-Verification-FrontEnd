@@ -50,7 +50,7 @@ const App = () => {
   };
 
   return (
-    <div className="App">
+    <div className="app">
       <Navbar></Navbar>
       <div className="tab-selector">
         <button

@@ -42,8 +42,8 @@ const App = () => {
       return (
         <BaselineReporting
           handleChange={handleChange}
-          onClickModel={clickModel}
           projectData={projectData}
+          setProjectData={setProjectData}
         ></BaselineReporting>
       );
     if (showModel) return <Model></Model>;

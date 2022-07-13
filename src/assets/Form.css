@@ -1,9 +1,7 @@
-.form-component{
-    display: flex;
-    flex-wrap: wrap;
+.item{
+    padding: 20px 0px 20px 0px
 }
 
-.form-component-item{
-    flex: 50%;
-    margin-bottom: 30px;
+button {
+float: right;
 }

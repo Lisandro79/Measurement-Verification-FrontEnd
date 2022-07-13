@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
-const LineChart = ({ period, htmlClass }) => {
-  let data = d3.csvParse(period);
+const LineChart = ({ dateTempEload, htmlClass }) => {
+  let data = d3.csvParse(dateTempEload);
 
   let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 

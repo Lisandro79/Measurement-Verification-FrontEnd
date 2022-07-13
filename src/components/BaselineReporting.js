@@ -4,7 +4,7 @@ import LineChart from "./LineChart";
 
 const csv = require("jquery-csv");
 
-function BaselineReporting({ projectData, handleChange, onClickModel }) {
+function BaselineReporting({ projectData, handleChange, setProjectData }) {
   const [inputCsv, setInputCsv] = useState(null);
   const [baseline, setBaseline] = useState(null);
   const [reporting, setReporting] = useState(null);
@@ -13,6 +13,7 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
 
   useEffect(() => {
     isProjectDataComplete();
+    console.log(projectData);
   }, [projectData]);
 
   const isProjectDataComplete = () => {
@@ -42,13 +43,7 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
     setInputCsv(inputCsv);
   };
 
-  const createPlot = () => {
-    if (!validateDates()) {
-      setPlotError(true);
-      return;
-    }
-    setPlotError(false);
-
+  const splitData = () => {
     const data = csv.toArrays(inputCsv);
 
     const startReportingDate = formatDate(projectData.start_reporting);
@@ -59,8 +54,53 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
     let baseline = data.slice(0, indexToSplit);
     let reporting = data.slice(indexToSplit + 1);
 
-    baseline = arrayToCsv(baseline);
-    reporting = arrayToCsv(reporting);
+    const splittedData = new Object();
+    splittedData.baseline = baseline;
+    splittedData.reporting = reporting;
+
+    return splittedData;
+  };
+
+  const onClickModel = () => {
+    saveVectors();
+  };
+
+  const saveVectors = () => {
+    let splittedData = splitData();
+
+    for (const key in splittedData) {
+      let date = [];
+      let eload = [];
+      let temp = [];
+
+      splittedData[key].forEach((element) => {
+        date.push(element[0]);
+        eload.push(element[1]);
+        temp.push(element[2]);
+      });
+
+      //deletes column name
+      date.shift();
+      eload.shift();
+      temp.shift();
+
+      setProjectData((values) => ({ ...values, [`${key}_datetime`]: date }));
+      setProjectData((values) => ({ ...values, [`${key}_eload`]: eload }));
+      setProjectData((values) => ({ ...values, [`${key}_temp`]: temp }));
+    }
+  };
+
+  const createPlot = () => {
+    if (!validateDates()) {
+      setPlotError(true);
+      return;
+    }
+    setPlotError(false);
+
+    let splittedData = splitData();
+
+    let baseline = arrayToCsv(splittedData.baseline);
+    let reporting = arrayToCsv(splittedData.reporting);
     reporting = "time,eload,temp\n" + reporting;
 
     setBaseline(baseline);
@@ -68,6 +108,13 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
   };
 
   const validateDates = () => {
+    //validations:
+    //- get start date and end date
+    // - que todas las fechas ingresadas estén en ese rango (función que compare un input de fecha con ese rango)
+    // - baseline start menor a baseline end
+    // - reporing start menor a reporting end
+    // - baseline end menor a reporting start
+
     const startReporting = formatDate(projectData.start_reporting);
     const data = csv.toArrays(inputCsv);
     const found = data.find((element) => element[0] === startReporting);
@@ -99,16 +146,14 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
   return (
     <div className="form-component">
       <h1>Baseline & reporting</h1>
-      <div className="form-component-item" />
-      <div className="form-component-item">
+      <div className="item">
         <h3>Upload building data</h3>
-        <p>CSV specs</p>
-      </div>
-      <div className="form-component-item">
+        <i>CSV specs</i>
         <p>Choose file</p>
         <input type="file" accept=".csv" onChange={handleFileChange} />
       </div>
-      <div className="form-component-item">
+      <div className="item">
+        <h3>Dates</h3>
         <p>
           <b>Baseline start date</b>
         </p>
@@ -118,21 +163,19 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
           onChange={handleChange}
         />
         <p>
-          <b>Reporting start date</b>
-        </p>
-        <input
-          type="datetime-local"
-          name="start_reporting"
-          onChange={handleChange}
-        />
-      </div>
-      <div className="form-component-item">
-        <p>
           <b>Baseline end date</b>
         </p>
         <input
           type="datetime-local"
           name="end_baseline"
+          onChange={handleChange}
+        />
+        <p>
+          <b>Reporting start date</b>
+        </p>
+        <input
+          type="datetime-local"
+          name="start_reporting"
           onChange={handleChange}
         />
         <p>
@@ -144,30 +187,35 @@ function BaselineReporting({ projectData, handleChange, onClickModel }) {
           onChange={handleChange}
         />
       </div>
-      <div className="form-component-item" />
+      <div className="item" />
 
-      {projectDataComplete ? <button onClick={createPlot}>Plot</button> : null}
-
-      {baseline ? (
-        <div className="form-component-item baseline">
-          <h3>Baseline period</h3>
-          <p>Please check that the data for the baseline is correct</p>
-          <LineChart period={baseline} htmlClass={"baseline"} />
+      {projectDataComplete ? (
+        <div className="item">
+          <button onClick={createPlot}>Plot</button>{" "}
         </div>
       ) : null}
 
-      {reporting ? (
-        <div className="form-component-item reporting">
-          <h3>Baseline period</h3>
-          <p>Please check that the data for the reporting is correct</p>
-          <LineChart period={reporting} htmlClass={"reporting"} />
-        </div>
-      ) : null}
+      <div className="item baseline">
+        <h3>Baseline period</h3>
+        <p>Please check that the data for the reporting is correct</p>
+        {baseline ? (
+          <LineChart dateTempEload={baseline} htmlClass={"baseline"} />
+        ) : null}
+      </div>
+
+      <div className="item reporting">
+        <h3>Reporting period</h3>
+        <p>Please check that the data for the reporting is correct</p>
+        {reporting ? (
+          <LineChart dateTempEload={reporting} htmlClass={"reporting"} />
+        ) : null}
+      </div>
 
       {plotError ? "The start reporting date is not in the CSV" : null}
 
-      <div className="form-component-item" />
-      <button onClick={onClickModel}>Model</button>
+      <div className="item">
+        <button onClick={onClickModel}>Model</button>
+      </div>
     </div>
   );
 }

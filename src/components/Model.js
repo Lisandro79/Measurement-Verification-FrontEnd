@@ -5,7 +5,9 @@ const Model = () => {
   return (
     <div className="model-chart">
       <h1>Model</h1>
-      <ModelChart></ModelChart>
+      <div className="item model">
+        <ModelChart htmlClass={"model"}></ModelChart>
+      </div>
     </div>
   );
 };

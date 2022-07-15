@@ -4,7 +4,12 @@ import LineChart from "./LineChart";
 
 const csv = require("jquery-csv");
 
-function BaselineReporting({ projectData, handleChange, setProjectData }) {
+function BaselineReporting({
+  projectData,
+  handleChange,
+  setProjectData,
+  clickModel,
+}) {
   const [inputCsv, setInputCsv] = useState(null);
   const [baseline, setBaseline] = useState(null);
   const [reporting, setReporting] = useState(null);
@@ -62,6 +67,7 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
 
   const onClickModel = () => {
     saveVectors();
+    clickModel();
   };
 
   const saveVectors = () => {
@@ -212,9 +218,15 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
 
       {projectDataComplete ? (
         <div className="item">
-          <button onClick={createPlot}>Plot</button>{" "}
+          <button onClick={createPlot}>Plot</button>
         </div>
       ) : null}
+
+      <div className="item">
+        {plotError
+          ? "Please check that the entered dates match the CSV and they are chronologically correct"
+          : null}
+      </div>
 
       <div className="item baseline">
         <h3>Baseline period</h3>
@@ -232,13 +244,11 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         ) : null}
       </div>
 
-      {plotError
-        ? "Please check that the entered dates match the CSV and they are chronologically correct"
-        : null}
-
-      <div className="item">
-        <button onClick={onClickModel}>Model</button>
-      </div>
+      {projectDataComplete ? (
+        <div className="item">
+          <button onClick={onClickModel}>Model</button>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -44,6 +44,7 @@ const App = () => {
           handleChange={handleChange}
           projectData={projectData}
           setProjectData={setProjectData}
+          clickModel={clickModel}
         ></BaselineReporting>
       );
     if (showModel) return <Model></Model>;

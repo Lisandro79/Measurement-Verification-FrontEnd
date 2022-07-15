@@ -13,7 +13,6 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
 
   useEffect(() => {
     isProjectDataComplete();
-    console.log(projectData);
   }, [projectData]);
 
   const isProjectDataComplete = () => {
@@ -108,18 +107,16 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
   };
 
   const validateDates = () => {
-    //validations:
-    //- get start date and end date
-    // - que todas las fechas ingresadas estén en ese rango (función que compare un input de fecha con ese rango)
-    // - baseline start menor a baseline end
-    // - reporing start menor a reporting end
-    // - baseline end menor a reporting start
-
+    const startBaseline = formatDate(projectData.start_baseline);
+    const endBaseline = formatDate(projectData.end_baseline);
     const startReporting = formatDate(projectData.start_reporting);
-    const data = csv.toArrays(inputCsv);
-    const found = data.find((element) => element[0] === startReporting);
+    const endReporting = formatDate(projectData.end_reporting);
 
-    if (found) return true;
+    let dates = [startBaseline, endBaseline, startReporting, endReporting];
+
+    if (datesInCsv(dates) && checkDatesRanges()) {
+      return true;
+    }
     return false;
   };
 
@@ -132,6 +129,30 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
       .substr(-2)} ${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`;
 
     return formattedDate;
+  };
+
+  const datesInCsv = (dates) => {
+    const data = csv.toArrays(inputCsv);
+    let foundAllDates = true;
+    let idx = 0;
+    while (foundAllDates && idx < dates.length) {
+      const found = data.find((element) => element[0] === dates[idx]);
+      foundAllDates = found;
+      idx++;
+    }
+    return foundAllDates;
+  };
+
+  const checkDatesRanges = () => {
+    //refactor
+    if (
+      projectData.start_baseline < projectData.end_baseline &&
+      projectData.start_reporting < projectData.end_reporting &&
+      projectData.end_baseline < projectData.start_reporting
+    ) {
+      return true;
+    }
+    return false;
   };
 
   const arrayToCsv = (array) => {
@@ -211,7 +232,9 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         ) : null}
       </div>
 
-      {plotError ? "The start reporting date is not in the CSV" : null}
+      {plotError
+        ? "Please check that the entered dates match the CSV and they are chronologically correct"
+        : null}
 
       <div className="item">
         <button onClick={onClickModel}>Model</button>

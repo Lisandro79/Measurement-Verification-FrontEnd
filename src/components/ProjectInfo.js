@@ -1,6 +1,6 @@
 import "../assets/Form.css";
 
-function ProjectInfo({ handleChange }) {
+function ProjectInfo({ handleChange, clickBaselineReport }) {
   return (
     <div className="form-component">
       <h1>Project Info</h1>
@@ -45,7 +45,7 @@ function ProjectInfo({ handleChange }) {
         <p>Date of installation</p>
         <input type="date" onChange={handleChange} name="date_installation" />
       </div>
-      <button>Next</button>
+      <button onClick={clickBaselineReport}>Next</button>
     </div>
   );
 }

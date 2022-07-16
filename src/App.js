@@ -37,7 +37,12 @@ const App = () => {
 
   const getFormComponent = () => {
     if (showProjectInfo)
-      return <ProjectInfo handleChange={handleChange}></ProjectInfo>;
+      return (
+        <ProjectInfo
+          handleChange={handleChange}
+          clickBaselineReport={clickBaselineReport}
+        ></ProjectInfo>
+      );
     if (showBaselineReporting)
       return (
         <BaselineReporting

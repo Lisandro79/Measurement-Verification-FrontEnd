@@ -9,8 +9,8 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
   const [baseline, setBaseline] = useState(null);
   const [reporting, setReporting] = useState(null);
   const [projectDataComplete, setProjectDataComplete] = useState(false);
-  const [plotError, setPlotError] = useState(false);
-
+  const [errorMsg, setErrorMsg] = useState(null);
+  
   useEffect(() => {
     isProjectDataComplete();
   }, [projectData]);
@@ -144,15 +144,18 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
   };
 
   const checkDatesRanges = () => {
-    //refactor
-    if (
-      projectData.start_baseline < projectData.end_baseline &&
-      projectData.start_reporting < projectData.end_reporting &&
-      projectData.end_baseline < projectData.start_reporting
-    ) {
-      return true;
+    if(projectData.start_baseline >= projectData.end_baseline){
+      setErrorMsg("Start baseline date has to be prior to end baseline date")
+      return
     }
-    return false;
+    if(projectData.start_reporting >= projectData.end_reporting){
+      setErrorMsg("Start reporting date has to be prior to end reporting date")
+      return
+    }
+    if(projectData.end_baseline >= projectData.start_reporting){
+      setErrorMsg("End baseline date has to be after start reporting date")
+      return
+    }
   };
 
   const arrayToCsv = (array) => {
@@ -232,9 +235,7 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         ) : null}
       </div>
 
-      {plotError
-        ? "Please check that the entered dates match the CSV and they are chronologically correct"
-        : null}
+      {errorMsg}
 
       <div className="item">
         <button onClick={onClickModel}>Model</button>

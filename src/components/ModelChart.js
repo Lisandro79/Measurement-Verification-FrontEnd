@@ -1,10 +1,10 @@
 import * as d3 from "d3";
+import React, { useState, useEffect } from "react";
 
 const parseJson = async (path) => {
-  let data;
-  fetch(path)
+  return new Promise((resolve) => {
+    fetch(path)
     .then((response) => response.json())
-    .then((json) => (data = json))
     .then((data) => {
       let baseline = [];
 
@@ -16,15 +16,16 @@ const parseJson = async (path) => {
         };
         baseline.push(aux);
       });
-      return baseline;
+      resolve(baseline)
     });
+  })
+  
 };
 
 const ModelChart = ({ htmlClass }) => {
-  console.log("aca");
 
   parseJson("template_response.json").then((data) => {
-    console.log("entre");
+
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
     data.forEach((d) => {

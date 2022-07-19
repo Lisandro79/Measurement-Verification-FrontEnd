@@ -91,10 +91,8 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
 
   const createPlot = () => {
     if (!validateDates()) {
-      setPlotError(true);
       return;
     }
-    setPlotError(false);
 
     let splittedData = splitData();
 
@@ -140,22 +138,29 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
       foundAllDates = found;
       idx++;
     }
-    return foundAllDates;
+    if(!foundAllDates){
+      setErrorMsg("Check that the dates are in the csv")
+    } else{
+      setErrorMsg(null)
+    }
+    return foundAllDates
   };
 
   const checkDatesRanges = () => {
     if(projectData.start_baseline >= projectData.end_baseline){
       setErrorMsg("Start baseline date has to be prior to end baseline date")
-      return
+      return false
     }
     if(projectData.start_reporting >= projectData.end_reporting){
       setErrorMsg("Start reporting date has to be prior to end reporting date")
-      return
+      return false
     }
     if(projectData.end_baseline >= projectData.start_reporting){
       setErrorMsg("End baseline date has to be after start reporting date")
-      return
+      return false
     }
+    setErrorMsg(null)
+    return true
   };
 
   const arrayToCsv = (array) => {
@@ -219,6 +224,8 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         </div>
       ) : null}
 
+      {errorMsg}
+
       <div className="item baseline">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
@@ -235,11 +242,11 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         ) : null}
       </div>
 
-      {errorMsg}
-
-      <div className="item">
-        <button onClick={onClickModel}>Model</button>
-      </div>
+      {projectDataComplete ? (
+        <div className="item">
+          <button onClick={onClickModel}>Model</button>
+        </div>
+      ) : null}
     </div>
   );
 }

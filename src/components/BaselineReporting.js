@@ -9,11 +9,10 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
   const [baseline, setBaseline] = useState(null);
   const [reporting, setReporting] = useState(null);
   const [projectDataComplete, setProjectDataComplete] = useState(false);
-  const [plotError, setPlotError] = useState(false);
-
+  const [errorMsg, setErrorMsg] = useState(null);
+  
   useEffect(() => {
     isProjectDataComplete();
-    console.log(projectData);
   }, [projectData]);
 
   const isProjectDataComplete = () => {
@@ -92,10 +91,8 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
 
   const createPlot = () => {
     if (!validateDates()) {
-      setPlotError(true);
       return;
     }
-    setPlotError(false);
 
     let splittedData = splitData();
 
@@ -108,18 +105,16 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
   };
 
   const validateDates = () => {
-    //validations:
-    //- get start date and end date
-    // - que todas las fechas ingresadas estén en ese rango (función que compare un input de fecha con ese rango)
-    // - baseline start menor a baseline end
-    // - reporing start menor a reporting end
-    // - baseline end menor a reporting start
-
+    const startBaseline = formatDate(projectData.start_baseline);
+    const endBaseline = formatDate(projectData.end_baseline);
     const startReporting = formatDate(projectData.start_reporting);
-    const data = csv.toArrays(inputCsv);
-    const found = data.find((element) => element[0] === startReporting);
+    const endReporting = formatDate(projectData.end_reporting);
 
-    if (found) return true;
+    let dates = [startBaseline, endBaseline, startReporting, endReporting];
+
+    if (datesInCsv(dates) && checkDatesRanges()) {
+      return true;
+    }
     return false;
   };
 
@@ -132,6 +127,40 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
       .substr(-2)} ${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`;
 
     return formattedDate;
+  };
+
+  const datesInCsv = (dates) => {
+    const data = csv.toArrays(inputCsv);
+    let foundAllDates = true;
+    let idx = 0;
+    while (foundAllDates && idx < dates.length) {
+      const found = data.find((element) => element[0] === dates[idx]);
+      foundAllDates = found;
+      idx++;
+    }
+    if(!foundAllDates){
+      setErrorMsg("Check that the dates are in the csv")
+    } else{
+      setErrorMsg(null)
+    }
+    return foundAllDates
+  };
+
+  const checkDatesRanges = () => {
+    if(projectData.start_baseline >= projectData.end_baseline){
+      setErrorMsg("Start baseline date has to be prior to end baseline date")
+      return false
+    }
+    if(projectData.start_reporting >= projectData.end_reporting){
+      setErrorMsg("Start reporting date has to be prior to end reporting date")
+      return false
+    }
+    if(projectData.end_baseline >= projectData.start_reporting){
+      setErrorMsg("End baseline date has to be after start reporting date")
+      return false
+    }
+    setErrorMsg(null)
+    return true
   };
 
   const arrayToCsv = (array) => {
@@ -195,6 +224,8 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         </div>
       ) : null}
 
+      {errorMsg}
+
       <div className="item baseline">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
@@ -211,11 +242,11 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         ) : null}
       </div>
 
-      {plotError ? "The start reporting date is not in the CSV" : null}
-
-      <div className="item">
-        <button onClick={onClickModel}>Model</button>
-      </div>
+      {projectDataComplete ? (
+        <div className="item">
+          <button onClick={onClickModel}>Model</button>
+        </div>
+      ) : null}
     </div>
   );
 }

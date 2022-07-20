@@ -11,10 +11,6 @@ const App = () => {
   const [showModel, setShowModel] = useState(false);
   const [projectData, setProjectData] = useState({});
 
-  useEffect(() => {
-    console.log(projectData);
-  },[projectData])
-
   const handleChange = (e) => {
     const {name, value} = e.target
     setProjectData(current => ({ ...current, [name]: value }));
@@ -55,7 +51,6 @@ const App = () => {
       return (
         <ProjectInfo
           handleChange={handleChange}
-          handleDateChange={handleDateChange}
           clickBaselineReport={clickBaselineReport}
         ></ProjectInfo>
       );

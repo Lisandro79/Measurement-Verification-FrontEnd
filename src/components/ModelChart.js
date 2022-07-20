@@ -19,7 +19,6 @@ const parseJson = async (path) => {
       resolve(baseline)
     });
   })
-  
 };
 
 const ModelChart = ({ htmlClass }) => {

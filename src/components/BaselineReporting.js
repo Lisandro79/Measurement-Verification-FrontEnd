@@ -1,6 +1,7 @@
 // import './BaselineReporting.css';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import LineChart from "./LineChart";
+import { arrayToCsv, formatDate } from "../utils/utils";
 import * as d3 from 'd3';
 
 const csv = require("jquery-csv");
@@ -8,22 +9,34 @@ const csv = require("jquery-csv");
 function BaselineReporting(props) {
 
   const [inputCsv, setInputCsv] = useState(null);
-  const [baseline, setBaseline] = useState(null);
-  const [reporting, setReporting] = useState(null);
+  const [formattedData, setFormattedData] = useState({})
   const [projectDataComplete, setProjectDataComplete] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  
+
+  const [mockBoolean, setMockBoolean] = useState(false)//delete
+
   useEffect(() => {
     if (
       inputCsv &&
-      props.projectData.start_baseline &&
-      props.projectData.end_baseline &&
-      props.projectData.start_reporting &&
-      props.projectData.end_reporting
+      props.projectData.dates.start_baseline &&
+      props.projectData.dates.end_baseline &&
+      props.projectData.dates.start_reporting &&
+      props.projectData.dates.end_reporting
     ) {
       setProjectDataComplete(true);
     }
   }, [props.projectData]);
+
+  useEffect(() => {
+    if(Object.keys(formattedData).length !== 0){
+      let baseline = arrayToCsv(formattedData.baseline);
+      let reporting = arrayToCsv(formattedData.reporting);
+      reporting = "time,eload,temp\n" + reporting;
+  
+      console.log(reporting);
+      console.log(baseline);
+    }    
+  }, [formattedData.baseline, formattedData.reporting]);
 
   const handleFileChange = (e) => {
     e.preventDefault();
@@ -40,23 +53,6 @@ function BaselineReporting(props) {
     setInputCsv(inputCsv);
   };
 
-  const splitData = () => {
-    const data = csv.toArrays(inputCsv);
-
-    const startReportingDate = formatDate(props.projectData.start_reporting);
-
-    const limit = data.find((element) => element[0] === startReportingDate);
-
-    let indexToSplit = data.indexOf(limit);
-    let baseline = data.slice(0, indexToSplit);
-    let reporting = data.slice(indexToSplit + 1);
-
-    const splittedData = new Object();
-    splittedData.baseline = baseline;
-    splittedData.reporting = reporting;
-
-    return splittedData;
-  };
 
   const onClickModel = () => {
     saveVectors();
@@ -92,57 +88,64 @@ function BaselineReporting(props) {
       return;
     }
 
-    let splittedData = splitData();
+    formatInputData()
 
-    let baseline = arrayToCsv(splittedData.baseline);
-    let reporting = arrayToCsv(splittedData.reporting);
-    reporting = "time,eload,temp\n" + reporting;
+    splitData()
 
-    //NEW
-    let parseTime = d3.timeParse("%m/%d/%y %H:%M");
+    // //NEW
+    // let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
-    baseline = d3.csvParse(baseline)
-    reporting = d3.csvParse(reporting)
-    
-    baseline.forEach((d) => {
-      d.time = parseTime(d.time);
-      d.eload = +d.eload;
-      d.temp = +d.temp;
-    });
+    // baseline = d3.csvParse(baseline)
+    // reporting = d3.csvParse(reporting)
 
-    reporting.forEach((d) => {
-      d.time = parseTime(d.time);
-      d.eload = +d.eload;
-      d.temp = +d.temp;
-    });
+    // baseline.forEach((d) => {
+    //   d.time = parseTime(d.time);
+    //   d.eload = +d.eload;
+    //   d.temp = +d.temp;
+    // });
 
-    setBaseline(baseline);
-    setReporting(reporting);
+    // reporting.forEach((d) => {
+    //   d.time = parseTime(d.time);
+    //   d.eload = +d.eload;
+    //   d.temp = +d.temp;
+    // });
+
+    // setBaseline(baseline);
+    // setReporting(reporting);
+  };
+
+  const formatInputData = () => {
+
+  }
+
+  const splitData = () => {
+    const data = csv.toArrays(inputCsv);
+
+    const startReportingDate = formatDate(props.projectData.dates.start_reporting);
+
+    const limit = data.find((element) => element[0] === startReportingDate);
+
+    let indexToSplit = data.indexOf(limit);
+    let baseline = data.slice(0, indexToSplit);
+    let reporting = data.slice(indexToSplit + 1);
+
+    setFormattedData(current => ({ ...current, "baseline": baseline }))
+    setFormattedData(current => ({ ...current, "reporting": reporting }))
   };
 
   const validateDates = () => {
-    const startBaseline = formatDate(props.projectData.start_baseline);
-    const endBaseline = formatDate(props.projectData.end_baseline);
-    const startReporting = formatDate(props.projectData.start_reporting);
-    const endReporting = formatDate(props.projectData.end_reporting);
 
-    let dates = [startBaseline, endBaseline, startReporting, endReporting];
+    let dates = []
+
+    for (let date in props.projectData.dates) {
+      date = formatDate(props.projectData.dates[date])
+      dates.push(date)
+    }
 
     if (datesInCsv(dates) && checkDatesRanges()) {
       return true;
     }
     return false;
-  };
-
-  const formatDate = (date) => {
-    date = new Date(date);
-
-    const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date
-      .getFullYear()
-      .toString()
-      .substr(-2)} ${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`;
-
-    return formattedDate;
   };
 
   const datesInCsv = (dates) => {
@@ -154,38 +157,27 @@ function BaselineReporting(props) {
       foundAllDates = found;
       idx++;
     }
-    if(!foundAllDates){
-      setErrorMsg("Check that the dates are in the csv")
-    } else{
-      setErrorMsg(null)
-    }
+
+    foundAllDates ? setErrorMsg(null) : setErrorMsg("Check that the dates are in the csv")
+
     return foundAllDates
   };
 
   const checkDatesRanges = () => {
-    if(props.projectData.start_baseline >= props.projectData.end_baseline){
+    if (props.projectData.start_baseline >= props.projectData.end_baseline) {
       setErrorMsg("Start baseline date has to be prior to end baseline date")
       return false
     }
-    if(props.projectData.start_reporting >= props.projectData.end_reporting){
+    if (props.projectData.start_reporting >= props.projectData.end_reporting) {
       setErrorMsg("Start reporting date has to be prior to end reporting date")
       return false
     }
-    if(props.projectData.end_baseline >= props.projectData.start_reporting){
+    if (props.projectData.end_baseline >= props.projectData.start_reporting) {
       setErrorMsg("End baseline date has to be after start reporting date")
       return false
     }
     setErrorMsg(null)
     return true
-  };
-
-  const arrayToCsv = (array) => {
-    var csv = array
-      .map(function (d) {
-        return d.join();
-      })
-      .join("\n");
-    return csv;
   };
 
   return (
@@ -245,16 +237,16 @@ function BaselineReporting(props) {
       <div className="item">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {baseline ? (
-          <LineChart data={baseline}/>
+        {mockBoolean ? (
+          <LineChart data={baseline} />
         ) : null}
       </div>
 
       <div className="item">
         <h3>Reporting period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {reporting ? (
-          <LineChart data={reporting}/>
+        {mockBoolean ? (
+          <LineChart data={reporting} />
         ) : null}
       </div>
 

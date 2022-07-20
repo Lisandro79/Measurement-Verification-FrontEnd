@@ -1,15 +1,12 @@
 // import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
 import LineChart from "./LineChart";
+import * as d3 from 'd3';
 
 const csv = require("jquery-csv");
 
-function BaselineReporting({
-  projectData,
-  handleChange,
-  setProjectData,
-  clickModel,
-}) {
+function BaselineReporting(props) {
+
   const [inputCsv, setInputCsv] = useState(null);
   const [baseline, setBaseline] = useState(null);
   const [reporting, setReporting] = useState(null);
@@ -17,20 +14,16 @@ function BaselineReporting({
   const [plotError, setPlotError] = useState(false);
 
   useEffect(() => {
-    isProjectDataComplete();
-  }, [projectData]);
-
-  const isProjectDataComplete = () => {
     if (
       inputCsv &&
-      projectData.start_baseline &&
-      projectData.end_baseline &&
-      projectData.start_reporting &&
-      projectData.end_reporting
+      props.projectData.start_baseline &&
+      props.projectData.end_baseline &&
+      props.projectData.start_reporting &&
+      props.projectData.end_reporting
     ) {
       setProjectDataComplete(true);
     }
-  };
+  }, [props.projectData]);
 
   const handleFileChange = (e) => {
     e.preventDefault();
@@ -50,7 +43,7 @@ function BaselineReporting({
   const splitData = () => {
     const data = csv.toArrays(inputCsv);
 
-    const startReportingDate = formatDate(projectData.start_reporting);
+    const startReportingDate = formatDate(props.projectData.start_reporting);
 
     const limit = data.find((element) => element[0] === startReportingDate);
 
@@ -89,13 +82,13 @@ function BaselineReporting({
       eload.shift();
       temp.shift();
 
-      setProjectData((values) => ({ ...values, [`${key}_datetime`]: date }));
-      setProjectData((values) => ({ ...values, [`${key}_eload`]: eload }));
-      setProjectData((values) => ({ ...values, [`${key}_temp`]: temp }));
+      props.setProjectData((values) => ({ ...values, [`${key}_datetime`]: date }));
+      props.setProjectData((values) => ({ ...values, [`${key}_eload`]: eload }));
+      props.setProjectData((values) => ({ ...values, [`${key}_temp`]: temp }));
     }
   };
 
-  const createPlot = () => {
+  const createChart = () => {
     if (!validateDates()) {
       setPlotError(true);
       return;
@@ -108,15 +101,33 @@ function BaselineReporting({
     let reporting = arrayToCsv(splittedData.reporting);
     reporting = "time,eload,temp\n" + reporting;
 
+    //NEW
+    let parseTime = d3.timeParse("%m/%d/%y %H:%M");
+
+    baseline = d3.csvParse(baseline)
+    reporting = d3.csvParse(reporting)
+    
+    baseline.forEach((d) => {
+      d.time = parseTime(d.time);
+      d.eload = +d.eload;
+      d.temp = +d.temp;
+    });
+
+    reporting.forEach((d) => {
+      d.time = parseTime(d.time);
+      d.eload = +d.eload;
+      d.temp = +d.temp;
+    });
+
     setBaseline(baseline);
     setReporting(reporting);
   };
 
   const validateDates = () => {
-    const startBaseline = formatDate(projectData.start_baseline);
-    const endBaseline = formatDate(projectData.end_baseline);
-    const startReporting = formatDate(projectData.start_reporting);
-    const endReporting = formatDate(projectData.end_reporting);
+    const startBaseline = formatDate(props.projectData.start_baseline);
+    const endBaseline = formatDate(props.projectData.end_baseline);
+    const startReporting = formatDate(props.projectData.start_reporting);
+    const endReporting = formatDate(props.projectData.end_reporting);
 
     let dates = [startBaseline, endBaseline, startReporting, endReporting];
 
@@ -152,9 +163,9 @@ function BaselineReporting({
   const checkDatesRanges = () => {
     //refactor
     if (
-      projectData.start_baseline < projectData.end_baseline &&
-      projectData.start_reporting < projectData.end_reporting &&
-      projectData.end_baseline < projectData.start_reporting
+      props.projectData.start_baseline < props.projectData.end_baseline &&
+      props.projectData.start_reporting < props.projectData.end_reporting &&
+      props.projectData.end_baseline < props.projectData.start_reporting
     ) {
       return true;
     }
@@ -187,7 +198,7 @@ function BaselineReporting({
         <input
           type="datetime-local"
           name="start_baseline"
-          onChange={handleChange}
+          onChange={props.handleChange}
         />
         <p>
           <b>Baseline end date</b>
@@ -195,7 +206,7 @@ function BaselineReporting({
         <input
           type="datetime-local"
           name="end_baseline"
-          onChange={handleChange}
+          onChange={props.handleChange}
         />
         <p>
           <b>Reporting start date</b>
@@ -203,7 +214,7 @@ function BaselineReporting({
         <input
           type="datetime-local"
           name="start_reporting"
-          onChange={handleChange}
+          onChange={props.handleChange}
         />
         <p>
           <b>Reporting end date</b>
@@ -211,14 +222,14 @@ function BaselineReporting({
         <input
           type="datetime-local"
           name="end_reporting"
-          onChange={handleChange}
+          onChange={props.handleChange}
         />
       </div>
       <div className="item" />
 
       {projectDataComplete ? (
         <div className="item">
-          <button onClick={createPlot}>Plot</button>
+          <button onClick={createChart}>Plot</button>
         </div>
       ) : null}
 
@@ -228,19 +239,19 @@ function BaselineReporting({
           : null}
       </div>
 
-      <div className="item baseline">
+      <div className="item">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
         {baseline ? (
-          <LineChart dateTempEload={baseline} htmlClass={"baseline"} />
+          <LineChart data={baseline}/>
         ) : null}
       </div>
 
-      <div className="item reporting">
+      <div className="item">
         <h3>Reporting period</h3>
         <p>Please check that the data for the reporting is correct</p>
         {reporting ? (
-          <LineChart dateTempEload={reporting} htmlClass={"reporting"} />
+          <LineChart data={reporting}/>
         ) : null}
       </div>
 

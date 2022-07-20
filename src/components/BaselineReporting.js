@@ -11,8 +11,8 @@ function BaselineReporting(props) {
   const [baseline, setBaseline] = useState(null);
   const [reporting, setReporting] = useState(null);
   const [projectDataComplete, setProjectDataComplete] = useState(false);
-  const [plotError, setPlotError] = useState(false);
-
+  const [errorMsg, setErrorMsg] = useState(null);
+  
   useEffect(() => {
     if (
       inputCsv &&
@@ -60,7 +60,6 @@ function BaselineReporting(props) {
 
   const onClickModel = () => {
     saveVectors();
-    clickModel();
   };
 
   const saveVectors = () => {
@@ -90,10 +89,8 @@ function BaselineReporting(props) {
 
   const createChart = () => {
     if (!validateDates()) {
-      setPlotError(true);
       return;
     }
-    setPlotError(false);
 
     let splittedData = splitData();
 
@@ -157,19 +154,29 @@ function BaselineReporting(props) {
       foundAllDates = found;
       idx++;
     }
-    return foundAllDates;
+    if(!foundAllDates){
+      setErrorMsg("Check that the dates are in the csv")
+    } else{
+      setErrorMsg(null)
+    }
+    return foundAllDates
   };
 
   const checkDatesRanges = () => {
-    //refactor
-    if (
-      props.projectData.start_baseline < props.projectData.end_baseline &&
-      props.projectData.start_reporting < props.projectData.end_reporting &&
-      props.projectData.end_baseline < props.projectData.start_reporting
-    ) {
-      return true;
+    if(props.projectData.start_baseline >= props.projectData.end_baseline){
+      setErrorMsg("Start baseline date has to be prior to end baseline date")
+      return false
     }
-    return false;
+    if(props.projectData.start_reporting >= props.projectData.end_reporting){
+      setErrorMsg("Start reporting date has to be prior to end reporting date")
+      return false
+    }
+    if(props.projectData.end_baseline >= props.projectData.start_reporting){
+      setErrorMsg("End baseline date has to be after start reporting date")
+      return false
+    }
+    setErrorMsg(null)
+    return true
   };
 
   const arrayToCsv = (array) => {
@@ -198,7 +205,7 @@ function BaselineReporting(props) {
         <input
           type="datetime-local"
           name="start_baseline"
-          onChange={props.handleChange}
+          onChange={props.handleDateChange}
         />
         <p>
           <b>Baseline end date</b>
@@ -206,7 +213,7 @@ function BaselineReporting(props) {
         <input
           type="datetime-local"
           name="end_baseline"
-          onChange={props.handleChange}
+          onChange={props.handleDateChange}
         />
         <p>
           <b>Reporting start date</b>
@@ -214,7 +221,7 @@ function BaselineReporting(props) {
         <input
           type="datetime-local"
           name="start_reporting"
-          onChange={props.handleChange}
+          onChange={props.handleDateChange}
         />
         <p>
           <b>Reporting end date</b>
@@ -222,7 +229,7 @@ function BaselineReporting(props) {
         <input
           type="datetime-local"
           name="end_reporting"
-          onChange={props.handleChange}
+          onChange={props.handleDateChange}
         />
       </div>
       <div className="item" />
@@ -233,11 +240,7 @@ function BaselineReporting(props) {
         </div>
       ) : null}
 
-      <div className="item">
-        {plotError
-          ? "Please check that the entered dates match the CSV and they are chronologically correct"
-          : null}
-      </div>
+      {errorMsg}
 
       <div className="item">
         <h3>Baseline period</h3>

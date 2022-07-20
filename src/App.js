@@ -11,11 +11,26 @@ const App = () => {
   const [showModel, setShowModel] = useState(false);
   const [projectData, setProjectData] = useState({});
 
+  useEffect(() => {
+    console.log(projectData);
+  },[projectData])
+
   const handleChange = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    setProjectData((values) => ({ ...values, [name]: value }));
+    const {name, value} = e.target
+    setProjectData(current => ({ ...current, [name]: value }));
   };
+
+  const handleDateChange = (e) => {
+    const {name, value} = e.target
+    setProjectData(current => ({
+      ...current,
+      dates: {
+        ...current.dates,
+        [name]: value
+      }
+    }))
+  }
+
 
   const clickProjectInfo = () => {
     setShowProjectInfo(true);
@@ -37,11 +52,18 @@ const App = () => {
 
   const getFormComponent = () => {
     if (showProjectInfo)
-      return <ProjectInfo handleChange={handleChange}></ProjectInfo>;
+      return (
+        <ProjectInfo
+          handleChange={handleChange}
+          handleDateChange={handleDateChange}
+          clickBaselineReport={clickBaselineReport}
+        ></ProjectInfo>
+      );
     if (showBaselineReporting)
       return (
         <BaselineReporting
           handleChange={handleChange}
+          handleDateChange={handleDateChange}
           projectData={projectData}
           setProjectData={setProjectData}
           clickModel={clickModel}

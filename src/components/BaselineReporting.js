@@ -9,11 +9,12 @@ const csv = require("jquery-csv");
 function BaselineReporting(props) {
 
   const [inputCsv, setInputCsv] = useState(null);
-  const [formattedData, setFormattedData] = useState({})
   const [projectDataComplete, setProjectDataComplete] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-
-  const [mockBoolean, setMockBoolean] = useState(false)//delete
+  const [parsedData, setParsedData] = useState({})
+  const [splittedData, setSplittedData] = useState({})
+  const [formattedData, setFormattedData] = useState({})
+  const [canPlot, setCanPlot] = useState(false);
 
   useEffect(() => {
     if (
@@ -28,15 +29,54 @@ function BaselineReporting(props) {
   }, [props.projectData]);
 
   useEffect(() => {
-    if(Object.keys(formattedData).length !== 0){
-      let baseline = arrayToCsv(formattedData.baseline);
-      let reporting = arrayToCsv(formattedData.reporting);
-      reporting = "time,eload,temp\n" + reporting;
-  
-      console.log(reporting);
-      console.log(baseline);
-    }    
+
+    const testFunc = async () => {
+      if (Object.keys(splittedData).length === 2) {
+
+        let baseline = await arrayToCsv(splittedData.baseline);
+        let reporting = await arrayToCsv(splittedData.reporting);
+        reporting = "time,eload,temp\n" + reporting;
+
+        setFormattedData(current => ({ ...current, "baseline": baseline }))
+        setFormattedData(current => ({ ...current, "reporting": reporting }))
+      }
+      return
+    }
+    testFunc()
+
+  }, [splittedData.baseline, splittedData.reporting]);
+
+  useEffect(() => {
+
+    const parseData = async () => {
+      let parseTime = d3.timeParse("%m/%d/%y %H:%M");
+
+      for (const period in formattedData) {
+        let parsedPeriod = d3.csvParse(formattedData[period])
+
+        parsedPeriod.forEach((d) => {
+          d.time = parseTime(d.time);
+          d.eload = +d.eload;
+          d.temp = +d.temp;
+        });
+        setParsedData(current => ({ ...current, period: parsedPeriod })) //change name of period var
+      }
+      return
+    }
+
+    parseData()
+
   }, [formattedData.baseline, formattedData.reporting]);
+
+  useEffect(() => {
+
+    // if (Object.keys(parsedData).length === 2) {
+    //   setCanPlot(true)
+    // }
+
+    console.log(parsedData);
+
+  }, [parsedData]);
 
   const handleFileChange = (e) => {
     e.preventDefault();
@@ -87,36 +127,8 @@ function BaselineReporting(props) {
     if (!validateDates()) {
       return;
     }
-
-    formatInputData()
-
     splitData()
-
-    // //NEW
-    // let parseTime = d3.timeParse("%m/%d/%y %H:%M");
-
-    // baseline = d3.csvParse(baseline)
-    // reporting = d3.csvParse(reporting)
-
-    // baseline.forEach((d) => {
-    //   d.time = parseTime(d.time);
-    //   d.eload = +d.eload;
-    //   d.temp = +d.temp;
-    // });
-
-    // reporting.forEach((d) => {
-    //   d.time = parseTime(d.time);
-    //   d.eload = +d.eload;
-    //   d.temp = +d.temp;
-    // });
-
-    // setBaseline(baseline);
-    // setReporting(reporting);
   };
-
-  const formatInputData = () => {
-
-  }
 
   const splitData = () => {
     const data = csv.toArrays(inputCsv);
@@ -129,8 +141,8 @@ function BaselineReporting(props) {
     let baseline = data.slice(0, indexToSplit);
     let reporting = data.slice(indexToSplit + 1);
 
-    setFormattedData(current => ({ ...current, "baseline": baseline }))
-    setFormattedData(current => ({ ...current, "reporting": reporting }))
+    setSplittedData(current => ({ ...current, "baseline": baseline }))
+    setSplittedData(current => ({ ...current, "reporting": reporting }))
   };
 
   const validateDates = () => {
@@ -237,16 +249,16 @@ function BaselineReporting(props) {
       <div className="item">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {mockBoolean ? (
-          <LineChart data={baseline} />
-        ) : null}
+        {canPlot ? (
+          <LineChart data={parsedData.baseline} />
+        ) : <h4>holaa</h4>}
       </div>
 
       <div className="item">
         <h3>Reporting period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {mockBoolean ? (
-          <LineChart data={reporting} />
+        {canPlot ? (
+          <LineChart data={parsedData.reporting} />
         ) : null}
       </div>
 

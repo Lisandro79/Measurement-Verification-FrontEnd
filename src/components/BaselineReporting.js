@@ -1,5 +1,5 @@
 // import './BaselineReporting.css';
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import LineChart from "./LineChart";
 import { arrayToCsv, formatDate } from "../utils/utils";
 import * as d3 from 'd3';
@@ -14,7 +14,6 @@ function BaselineReporting(props) {
   const [parsedData, setParsedData] = useState({})
   const [splittedData, setSplittedData] = useState({})
   const [formattedData, setFormattedData] = useState({})
-  const [canPlot, setCanPlot] = useState(false);
 
   useEffect(() => {
     if (
@@ -30,7 +29,7 @@ function BaselineReporting(props) {
 
   useEffect(() => {
 
-    const testFunc = async () => {
+    const formatData = async () => {
       if (Object.keys(splittedData).length === 2) {
 
         let baseline = await arrayToCsv(splittedData.baseline);
@@ -42,12 +41,10 @@ function BaselineReporting(props) {
       }
       return
     }
-    testFunc()
-
+    formatData()
   }, [splittedData.baseline, splittedData.reporting]);
 
   useEffect(() => {
-
     const parseData = async () => {
       let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
@@ -59,24 +56,12 @@ function BaselineReporting(props) {
           d.eload = +d.eload;
           d.temp = +d.temp;
         });
-        setParsedData(current => ({ ...current, period: parsedPeriod })) //change name of period var
+        setParsedData(current => ({ ...current, [period]: parsedPeriod }))
       }
       return
     }
-
     parseData()
-
   }, [formattedData.baseline, formattedData.reporting]);
-
-  useEffect(() => {
-
-    // if (Object.keys(parsedData).length === 2) {
-    //   setCanPlot(true)
-    // }
-
-    console.log(parsedData);
-
-  }, [parsedData]);
 
   const handleFileChange = (e) => {
     e.preventDefault();
@@ -91,36 +76,6 @@ function BaselineReporting(props) {
   const validateFile = (inputCsv) => {
     //TO DO: validate data of csv file
     setInputCsv(inputCsv);
-  };
-
-
-  const onClickModel = () => {
-    saveVectors();
-  };
-
-  const saveVectors = () => {
-    let splittedData = splitData();
-
-    for (const key in splittedData) {
-      let date = [];
-      let eload = [];
-      let temp = [];
-
-      splittedData[key].forEach((element) => {
-        date.push(element[0]);
-        eload.push(element[1]);
-        temp.push(element[2]);
-      });
-
-      //deletes column name
-      date.shift();
-      eload.shift();
-      temp.shift();
-
-      props.setProjectData((values) => ({ ...values, [`${key}_datetime`]: date }));
-      props.setProjectData((values) => ({ ...values, [`${key}_eload`]: eload }));
-      props.setProjectData((values) => ({ ...values, [`${key}_temp`]: temp }));
-    }
   };
 
   const createChart = () => {
@@ -192,6 +147,34 @@ function BaselineReporting(props) {
     return true
   };
 
+  const onClickModel = () => {
+    saveVectors();
+    props.clickModel()
+  };
+
+  const saveVectors = () => {
+    for(const period in splittedData){
+      let date = [];
+      let eload = [];
+      let temp = [];
+
+      splittedData[period].forEach((element) => {
+        date.push(element[0]);
+        eload.push(element[1]);
+        temp.push(element[2]);
+      });
+
+      //deletes column name
+      date.shift();
+      eload.shift();
+      temp.shift();
+
+      props.setProjectData((values) => ({ ...values, [`${period}_datetime`]: date }));
+      props.setProjectData((values) => ({ ...values, [`${period}_eload`]: eload }));
+      props.setProjectData((values) => ({ ...values, [`${period}_temp`]: temp }));
+    }
+  }
+
   return (
     <div className="form-component">
       <h1>Baseline & reporting</h1>
@@ -249,15 +232,15 @@ function BaselineReporting(props) {
       <div className="item">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {canPlot ? (
+        {parsedData.baseline ? (
           <LineChart data={parsedData.baseline} />
-        ) : <h4>holaa</h4>}
+        ) : null}
       </div>
 
       <div className="item">
         <h3>Reporting period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {canPlot ? (
+        {parsedData.reporting ? (
           <LineChart data={parsedData.reporting} />
         ) : null}
       </div>

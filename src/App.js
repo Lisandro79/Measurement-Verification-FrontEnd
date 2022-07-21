@@ -11,13 +11,17 @@ const App = () => {
   const [showModel, setShowModel] = useState(false);
   const [projectData, setProjectData] = useState({});
 
+  useEffect(() => {
+    console.log(projectData);
+  }, [projectData])
+
   const handleChange = (e) => {
-    const {name, value} = e.target
+    const { name, value } = e.target
     setProjectData(current => ({ ...current, [name]: value }));
   };
 
   const handleDateChange = (e) => {
-    const {name, value} = e.target
+    const { name, value } = e.target
     setProjectData(current => ({
       ...current,
       dates: {
@@ -26,7 +30,6 @@ const App = () => {
       }
     }))
   }
-
 
   const clickProjectInfo = () => {
     setShowProjectInfo(true);

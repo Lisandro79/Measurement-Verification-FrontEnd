@@ -4,6 +4,8 @@ import * as d3 from 'd3';
 
 function ModelChart({ data }) {
 
+  console.log(data);
+
   const ref = useD3(
     (svg) => {
     // set the dimensions and margins of the graph
@@ -18,7 +20,7 @@ function ModelChart({ data }) {
 
     x.domain(
         d3.extent(data, (d) => {
-        return d.time;
+        return d.datetime;
         })
     );
     y0.domain([
@@ -30,7 +32,7 @@ function ModelChart({ data }) {
     y1.domain([
         0,
         d3.max(data, (d) => {
-        return d.temp;
+        return d.counterfactual_usage;
         }),
     ]);
 
@@ -54,7 +56,7 @@ function ModelChart({ data }) {
     let valueLine = d3
         .line()
         .x((d) => {
-        return x(d.time);
+        return x(d.datetime);
         })
         .y((d) => {
         return y0(d.eload);
@@ -64,10 +66,10 @@ function ModelChart({ data }) {
     let valueLine2 = d3
         .line()
         .x((d) => {
-        return x(d.time);
+        return x(d.datetime);
         })
         .y((d) => {
-        return y1(d.temp);
+        return y1(d.counterfactual_usage);
         });
 
     svg

@@ -4,8 +4,6 @@ import * as d3 from 'd3';
 
 function LineChart({ data }) {
 
-  console.log(data);
-
   const ref = useD3(
     (svg) => {
     // set the dimensions and margins of the graph

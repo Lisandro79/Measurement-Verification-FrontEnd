@@ -14,8 +14,11 @@ const Model = () => {
 
       let baseline = await parseBaseline(json)
       let reporting = await parseReporting(json)
+      let counterfactual = await parseCounterfactual(json)
       
       let data = baseline.concat(reporting)
+      data = data.concat(counterfactual)
+
       setData(data)  
 
       return
@@ -30,7 +33,8 @@ const Model = () => {
     json.baseline_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
-        eload: +json.baseline_eload[index],
+        condition: "baseline",
+        eload: +json.baseline_eload[index]        
       };
       result.push(aux);
     });
@@ -44,15 +48,28 @@ const Model = () => {
     json.reporting_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
-        eload: +json.reporting_eload[index],
-        counterfactual_usage: +json.reporting_counterfactual_usage[index],
+        condition: "reporting",
+        eload: +json.reporting_eload[index]        
       };
       result.push(aux);
     });
     return result
   }
 
+  const parseCounterfactual = async (json) => {
+    let result = []
+    let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
+    json.reporting_datetime.forEach((date, index) => {
+      let aux = {
+        datetime: parseTime(date),
+        condition: "counterfactual",
+        eload: +json.reporting_counterfactual_usage[index]        
+      };
+      result.push(aux);
+    });
+    return result
+  }
 
   return (
     <div className="model-chart">

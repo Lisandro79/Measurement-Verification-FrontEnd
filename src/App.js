@@ -12,10 +12,20 @@ const App = () => {
   const [projectData, setProjectData] = useState({});
 
   const handleChange = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    setProjectData((values) => ({ ...values, [name]: value }));
+    const { name, value } = e.target
+    setProjectData(current => ({ ...current, [name]: value }));
   };
+
+  const handleDateChange = (e) => {
+    const { name, value } = e.target
+    setProjectData(current => ({
+      ...current,
+      dates: {
+        ...current.dates,
+        [name]: value
+      }
+    }))
+  }
 
   const clickProjectInfo = () => {
     setShowProjectInfo(true);
@@ -47,8 +57,10 @@ const App = () => {
       return (
         <BaselineReporting
           handleChange={handleChange}
+          handleDateChange={handleDateChange}
           projectData={projectData}
           setProjectData={setProjectData}
+          clickModel={clickModel}
         ></BaselineReporting>
       );
     if (showModel) return <Model></Model>;

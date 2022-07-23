@@ -1,31 +1,67 @@
 // import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
 import LineChart from "./LineChart";
+import { arrayToCsv, formatDate } from "../utils/utils";
+import * as d3 from 'd3';
 
 const csv = require("jquery-csv");
 
-function BaselineReporting({ projectData, handleChange, setProjectData }) {
+function BaselineReporting(props) {
+
   const [inputCsv, setInputCsv] = useState(null);
-  const [baseline, setBaseline] = useState(null);
-  const [reporting, setReporting] = useState(null);
   const [projectDataComplete, setProjectDataComplete] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  
-  useEffect(() => {
-    isProjectDataComplete();
-  }, [projectData]);
+  const [parsedData, setParsedData] = useState({})
+  const [splittedData, setSplittedData] = useState({})
+  const [formattedData, setFormattedData] = useState({})
 
-  const isProjectDataComplete = () => {
+  useEffect(() => {
     if (
       inputCsv &&
-      projectData.start_baseline &&
-      projectData.end_baseline &&
-      projectData.start_reporting &&
-      projectData.end_reporting
+      props.projectData.dates.start_baseline &&
+      props.projectData.dates.end_baseline &&
+      props.projectData.dates.start_reporting &&
+      props.projectData.dates.end_reporting
     ) {
       setProjectDataComplete(true);
     }
-  };
+  }, [props.projectData]);
+
+  useEffect(() => {
+
+    const formatData = async () => {
+      if (Object.keys(splittedData).length === 2) {
+
+        let baseline = await arrayToCsv(splittedData.baseline);
+        let reporting = await arrayToCsv(splittedData.reporting);
+        reporting = "time,eload,temp\n" + reporting;
+
+        setFormattedData(current => ({ ...current, "baseline": baseline }))
+        setFormattedData(current => ({ ...current, "reporting": reporting }))
+      }
+      return
+    }
+    formatData()
+  }, [splittedData.baseline, splittedData.reporting]);
+
+  useEffect(() => {
+    const parseData = async () => {
+      let parseTime = d3.timeParse("%m/%d/%y %H:%M");
+
+      for (const period in formattedData) {
+        let parsedPeriod = d3.csvParse(formattedData[period])
+
+        parsedPeriod.forEach((d) => {
+          d.time = parseTime(d.time);
+          d.eload = +d.eload;
+          d.temp = +d.temp;
+        });
+        setParsedData(current => ({ ...current, [period]: parsedPeriod }))
+      }
+      return
+    }
+    parseData()
+  }, [formattedData.baseline, formattedData.reporting]);
 
   const handleFileChange = (e) => {
     e.preventDefault();
@@ -42,10 +78,17 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
     setInputCsv(inputCsv);
   };
 
+  const createChart = () => {
+    if (!validateDates()) {
+      return;
+    }
+    splitData()
+  };
+
   const splitData = () => {
     const data = csv.toArrays(inputCsv);
 
-    const startReportingDate = formatDate(projectData.start_reporting);
+    const startReportingDate = formatDate(props.projectData.dates.start_reporting);
 
     const limit = data.find((element) => element[0] === startReportingDate);
 
@@ -53,80 +96,23 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
     let baseline = data.slice(0, indexToSplit);
     let reporting = data.slice(indexToSplit + 1);
 
-    const splittedData = new Object();
-    splittedData.baseline = baseline;
-    splittedData.reporting = reporting;
-
-    return splittedData;
-  };
-
-  const onClickModel = () => {
-    saveVectors();
-  };
-
-  const saveVectors = () => {
-    let splittedData = splitData();
-
-    for (const key in splittedData) {
-      let date = [];
-      let eload = [];
-      let temp = [];
-
-      splittedData[key].forEach((element) => {
-        date.push(element[0]);
-        eload.push(element[1]);
-        temp.push(element[2]);
-      });
-
-      //deletes column name
-      date.shift();
-      eload.shift();
-      temp.shift();
-
-      setProjectData((values) => ({ ...values, [`${key}_datetime`]: date }));
-      setProjectData((values) => ({ ...values, [`${key}_eload`]: eload }));
-      setProjectData((values) => ({ ...values, [`${key}_temp`]: temp }));
-    }
-  };
-
-  const createPlot = () => {
-    if (!validateDates()) {
-      return;
-    }
-
-    let splittedData = splitData();
-
-    let baseline = arrayToCsv(splittedData.baseline);
-    let reporting = arrayToCsv(splittedData.reporting);
-    reporting = "time,eload,temp\n" + reporting;
-
-    setBaseline(baseline);
-    setReporting(reporting);
+    setSplittedData(current => ({ ...current, "baseline": baseline }))
+    setSplittedData(current => ({ ...current, "reporting": reporting }))
   };
 
   const validateDates = () => {
-    const startBaseline = formatDate(projectData.start_baseline);
-    const endBaseline = formatDate(projectData.end_baseline);
-    const startReporting = formatDate(projectData.start_reporting);
-    const endReporting = formatDate(projectData.end_reporting);
 
-    let dates = [startBaseline, endBaseline, startReporting, endReporting];
+    let dates = []
+
+    for (let date in props.projectData.dates) {
+      date = formatDate(props.projectData.dates[date])
+      dates.push(date)
+    }
 
     if (datesInCsv(dates) && checkDatesRanges()) {
       return true;
     }
     return false;
-  };
-
-  const formatDate = (date) => {
-    date = new Date(date);
-
-    const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date
-      .getFullYear()
-      .toString()
-      .substr(-2)} ${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`;
-
-    return formattedDate;
   };
 
   const datesInCsv = (dates) => {
@@ -138,24 +124,22 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
       foundAllDates = found;
       idx++;
     }
-    if(!foundAllDates){
-      setErrorMsg("Check that the dates are in the csv")
-    } else{
-      setErrorMsg(null)
-    }
+
+    foundAllDates ? setErrorMsg(null) : setErrorMsg("Check that the dates are in the csv")
+
     return foundAllDates
   };
 
   const checkDatesRanges = () => {
-    if(projectData.start_baseline >= projectData.end_baseline){
+    if (props.projectData.start_baseline >= props.projectData.end_baseline) {
       setErrorMsg("Start baseline date has to be prior to end baseline date")
       return false
     }
-    if(projectData.start_reporting >= projectData.end_reporting){
+    if (props.projectData.start_reporting >= props.projectData.end_reporting) {
       setErrorMsg("Start reporting date has to be prior to end reporting date")
       return false
     }
-    if(projectData.end_baseline >= projectData.start_reporting){
+    if (props.projectData.end_baseline >= props.projectData.start_reporting) {
       setErrorMsg("End baseline date has to be after start reporting date")
       return false
     }
@@ -163,14 +147,33 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
     return true
   };
 
-  const arrayToCsv = (array) => {
-    var csv = array
-      .map(function (d) {
-        return d.join();
-      })
-      .join("\n");
-    return csv;
+  const onClickModel = () => {
+    saveVectors();
+    props.clickModel()
   };
+
+  const saveVectors = () => {
+    for(const period in splittedData){
+      let date = [];
+      let eload = [];
+      let temp = [];
+
+      splittedData[period].forEach((element) => {
+        date.push(element[0]);
+        eload.push(element[1]);
+        temp.push(element[2]);
+      });
+
+      //deletes column name
+      date.shift();
+      eload.shift();
+      temp.shift();
+
+      props.setProjectData((values) => ({ ...values, [`${period}_datetime`]: date }));
+      props.setProjectData((values) => ({ ...values, [`${period}_eload`]: eload }));
+      props.setProjectData((values) => ({ ...values, [`${period}_temp`]: temp }));
+    }
+  }
 
   return (
     <div className="form-component">
@@ -189,7 +192,7 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         <input
           type="datetime-local"
           name="start_baseline"
-          onChange={handleChange}
+          onChange={props.handleDateChange}
         />
         <p>
           <b>Baseline end date</b>
@@ -197,7 +200,7 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         <input
           type="datetime-local"
           name="end_baseline"
-          onChange={handleChange}
+          onChange={props.handleDateChange}
         />
         <p>
           <b>Reporting start date</b>
@@ -205,7 +208,7 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         <input
           type="datetime-local"
           name="start_reporting"
-          onChange={handleChange}
+          onChange={props.handleDateChange}
         />
         <p>
           <b>Reporting end date</b>
@@ -213,32 +216,32 @@ function BaselineReporting({ projectData, handleChange, setProjectData }) {
         <input
           type="datetime-local"
           name="end_reporting"
-          onChange={handleChange}
+          onChange={props.handleDateChange}
         />
       </div>
       <div className="item" />
 
       {projectDataComplete ? (
         <div className="item">
-          <button onClick={createPlot}>Plot</button>{" "}
+          <button onClick={createChart}>Plot</button>
         </div>
       ) : null}
 
       {errorMsg}
 
-      <div className="item baseline">
+      <div className="item">
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {baseline ? (
-          <LineChart dateTempEload={baseline} htmlClass={"baseline"} />
+        {parsedData.baseline ? (
+          <LineChart data={parsedData.baseline} />
         ) : null}
       </div>
 
-      <div className="item reporting">
+      <div className="item">
         <h3>Reporting period</h3>
         <p>Please check that the data for the reporting is correct</p>
-        {reporting ? (
-          <LineChart dateTempEload={reporting} htmlClass={"reporting"} />
+        {parsedData.reporting ? (
+          <LineChart data={parsedData.reporting} />
         ) : null}
       </div>
 

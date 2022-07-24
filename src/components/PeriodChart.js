@@ -2,7 +2,7 @@ import { useD3 } from '../hooks/useD3';
 import React from 'react';
 import * as d3 from 'd3';
 
-function LineChart({ data }) {
+function PeriodChart({ data }) {
 
   const ref = useD3(
     (svg) => {
@@ -108,4 +108,4 @@ function LineChart({ data }) {
   );
 }
 
-export default LineChart;
+export default PeriodChart;

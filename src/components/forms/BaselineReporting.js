@@ -1,7 +1,7 @@
 // import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
-import LineChart from "./LineChart";
-import { arrayToCsv, formatDate } from "../utils/utils";
+import PeriodChart from "../PeriodChart";
+import { arrayToCsv, formatDate } from "../../utils/utils";
 import * as d3 from 'd3';
 
 const csv = require("jquery-csv");
@@ -147,12 +147,12 @@ function BaselineReporting(props) {
     return true
   };
 
-  const onClickModel = () => {
-    saveVectors();
+  const onClickModel = async () => {
+    await saveVectors();
     props.clickModel()
   };
 
-  const saveVectors = () => {
+  const saveVectors = async () => {
     for(const period in splittedData){
       let date = [];
       let eload = [];
@@ -233,7 +233,7 @@ function BaselineReporting(props) {
         <h3>Baseline period</h3>
         <p>Please check that the data for the reporting is correct</p>
         {parsedData.baseline ? (
-          <LineChart data={parsedData.baseline} />
+          <PeriodChart data={parsedData.baseline} />
         ) : null}
       </div>
 
@@ -241,7 +241,7 @@ function BaselineReporting(props) {
         <h3>Reporting period</h3>
         <p>Please check that the data for the reporting is correct</p>
         {parsedData.reporting ? (
-          <LineChart data={parsedData.reporting} />
+          <PeriodChart data={parsedData.reporting} />
         ) : null}
       </div>
 

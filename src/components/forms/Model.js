@@ -6,26 +6,20 @@ import { model } from "../../api/model";
 const Model = (props) => {
   const [data, setData] = useState(null);
 
+  console.log(props);
+
   useEffect(() => {
     const fetchData = async () => {
 
-      //AXIOS
-      let response = await fetch("template_data.json"); //change to backend endpoint
-      let json = await response.json();
-      console.log(json);
-
-      let apiResponse = await model(json);
-      console.log(apiResponse);
-      console.log(apiResponse.data);
-
       //APP FORM
-      // console.log(props.projectData);
-      // let response = await model(props.projectData);
-      // let apiResponse = await response.json();
+      console.log(props.projectData);
+      let response = await model(props.projectData);
+      console.log(response.data);
+      //let apiResponse = await response.json();
 
-      let baseline = await parseBaseline(apiResponse.data);
-      let reporting = await parseReporting(apiResponse.data);
-      let counterfactual = await parseCounterfactual(apiResponse.data);
+      let baseline = await parseBaseline(response.data);
+      let reporting = await parseReporting(response.data);
+      let counterfactual = await parseCounterfactual(response.data);
 
       let data = baseline.concat(reporting);
       data = data.concat(counterfactual);
@@ -36,10 +30,6 @@ const Model = (props) => {
     };
     fetchData();
   }, []);
-
-  useEffect(() => {
-    console.log(data);
-  }, [data])
 
   const parseBaseline = async (json) => {
     let result = [];

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import ModelChart from "../ModelChart";
+import ModelChart from "../charts/ModelChart";
+import ModelChart2 from "../charts/ModelChart2";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import template_data from "./template_data.json"
@@ -85,7 +86,7 @@ const Model = (props) => {
     <div className="model-chart">
       <h1>Model</h1>
       <div className="item model">
-        {data ? <ModelChart data={data}></ModelChart> : null}
+        {data ? <ModelChart2 data={data}></ModelChart2> : null}
       </div>
     </div>
   );

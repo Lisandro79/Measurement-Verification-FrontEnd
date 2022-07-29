@@ -1,6 +1,6 @@
 // import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
-import PeriodChart from "../PeriodChart";
+import PeriodChart from "../charts/PeriodChart";
 import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
 import * as d3 from 'd3';
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./assets/App.css";
 import Navbar from "./components/Navbar";
-import BaselineReporting from "./components/BaselineReporting";
-import Model from "./components/Model";
-import ProjectInfo from "./components/ProjectInfo";
+import BaselineReporting from "./components/forms/BaselineReporting";
+import Model from "./components/forms/Model";
+import ProjectInfo from "./components/forms/ProjectInfo";
 
 const App = () => {
   const [showProjectInfo, setShowProjectInfo] = useState(true);
@@ -63,7 +63,7 @@ const App = () => {
           clickModel={clickModel}
         ></BaselineReporting>
       );
-    if (showModel) return <Model></Model>;
+    if (showModel) return <Model projectData={projectData}></Model>;
   };
 
   return (

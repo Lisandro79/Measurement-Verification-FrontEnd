@@ -36,7 +36,7 @@ function ModelChart({ data }) {
         .join("path")
         .attr("fill", "none")
         .attr("stroke", function (d) { return color(d[0]) })
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", 1)
         .attr("d", function (d) {
           return d3.line()
             .x(function (d) { return x(d.datetime); })
@@ -58,7 +58,7 @@ function ModelChart({ data }) {
           marginLeft: "0px",
         }}
       >
-        <g  transform="transform translate" className="plot-area" />
+        <g className="plot-area" />
         <g className="x-axis" />
         <g className="y-axis" />
       </svg>

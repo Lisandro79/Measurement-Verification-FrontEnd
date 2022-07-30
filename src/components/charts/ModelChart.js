@@ -37,7 +37,7 @@ const LineChart = ({ data }) => {
       .attr("transform", `translate(0, ${height})`)
       .call(d3.axisBottom(x));
 
-    //x axis label
+    //x axis title
     svg
       .append("text")
       .attr("text-anchor", "end")
@@ -58,7 +58,7 @@ const LineChart = ({ data }) => {
 
     svg.append("g").call(d3.axisLeft(y));
 
-    //y axis label
+    //y axis title
     svg.append("text")
     .attr("text-anchor", "end")
     .attr("transform", "rotate(-90)")
@@ -74,7 +74,7 @@ const LineChart = ({ data }) => {
     const color = d3
       .scaleOrdinal()
       .domain(keys)
-      .range(["#0C6291", "#ffa600", "#A63446"]);
+      .range(["#0c6291", "#ffa600", "#a63446"]);
 
     //add the lines
     svg
@@ -83,7 +83,7 @@ const LineChart = ({ data }) => {
       .join("path")
       .attr("fill", "none")
       .attr("stroke", function (d) {
-        return color(d[0]);
+        return color(d[1]);
       })
       .attr("stroke-width", 1)
       .attr("d", function (d) {

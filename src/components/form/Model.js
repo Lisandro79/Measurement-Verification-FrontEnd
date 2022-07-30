@@ -87,6 +87,9 @@ const Model = (props) => {
       <div className="item model">
         {data ? <ModelChart data={data}></ModelChart> : null}
       </div>
+      <div className="item">
+        <button onClick={props.prevFormStep}>Back</button>
+      </div>
     </div>
   );
 };

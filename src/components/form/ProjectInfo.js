@@ -45,7 +45,7 @@ function ProjectInfo( props ) {
         <p>Date of installation</p>
         <input type="date" onChange={props.handleChange} name="date_installation" />
       </div>
-      <button onClick={props.clickBaselineReport}>Next</button>
+      <button onClick={props.nextFormStep}>Next</button>
     </div>
   );
 }

@@ -153,7 +153,8 @@ function BaselineReporting(props) {
 
   const onClickModel = async () => {
     await saveVectors();
-    props.clickModel()
+    //props.clickModel()
+    props.nextFormStep()
   };
 
   const saveVectors = async () => {

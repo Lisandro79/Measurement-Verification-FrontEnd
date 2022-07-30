@@ -6,10 +6,16 @@ import Model from "./components/form/Model";
 import ProjectInfo from "./components/form/ProjectInfo";
 
 const App = () => {
-  const [showProjectInfo, setShowProjectInfo] = useState(true);
-  const [showBaselineReporting, setShowBaselineReporting] = useState(false);
-  const [showModel, setShowModel] = useState(false);
   const [projectData, setProjectData] = useState({});
+  const [formStep, setFormStep] = useState(1);
+
+  const nextFormStep = () => {
+    setFormStep(formStep + 1);
+  };
+
+  const prevFormStep = () => {
+    setFormStep(formStep - 1);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -27,43 +33,36 @@ const App = () => {
     }))
   }
 
-  const clickProjectInfo = () => {
-    setShowProjectInfo(true);
-    setShowBaselineReporting(false);
-    setShowModel(false);
-  };
-
-  const clickBaselineReport = () => {
-    setShowBaselineReporting(true);
-    setShowModel(false);
-    setShowProjectInfo(false);
-  };
-
-  const clickModel = () => {
-    setShowModel(true);
-    setShowProjectInfo(false);
-    setShowBaselineReporting(false);
-  };
-
   const getFormComponent = () => {
-    if (showProjectInfo)
-      return (
-        <ProjectInfo
-          handleChange={handleChange}
-          clickBaselineReport={clickBaselineReport}
-        ></ProjectInfo>
-      );
-    if (showBaselineReporting)
-      return (
-        <BaselineReporting
-          handleChange={handleChange}
-          handleDateChange={handleDateChange}
+    switch (formStep) {
+      case 1:
+        return (
+          <ProjectInfo
+            handleChange={handleChange}
+            nextFormStep={nextFormStep}
+          ></ProjectInfo>
+        )
+
+      case 2:
+        return (
+          <BaselineReporting
+            handleChange={handleChange}
+            handleDateChange={handleDateChange}
+            projectData={projectData}
+            setProjectData={setProjectData}
+            nextFormStep={nextFormStep}
+            prevFormStep={prevFormStep}
+          ></BaselineReporting>
+        )
+
+      case 3:
+        return (
+          <Model 
           projectData={projectData}
-          setProjectData={setProjectData}
-          clickModel={clickModel}
-        ></BaselineReporting>
-      );
-    if (showModel) return <Model projectData={projectData}></Model>;
+          prevFormStep={prevFormStep}
+          ></Model>
+        )
+    }
   };
 
   return (
@@ -71,20 +70,17 @@ const App = () => {
       <Navbar></Navbar>
       <div className="tab-selector">
         <button
-          className={showProjectInfo ? "active-button" : null}
-          onClick={clickProjectInfo}
+          className={formStep === 1 ? "active-button" : null}
         >
           Project info
         </button>
         <button
-          className={showBaselineReporting ? "active-button" : null}
-          onClick={clickBaselineReport}
+          className={formStep === 2 ? "active-button" : null}
         >
           Baseline & reporting
         </button>
         <button
-          className={showModel ? "active-button" : null}
-          onClick={clickModel}
+          className={formStep === 3 ? "active-button" : null}
         >
           Model
         </button>

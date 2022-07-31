@@ -1,80 +1,92 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import template_data from "./template_data.json"
 import template_response from "./template_response.json"
 
-
-
 const Model = (props) => {
-  const [data, setData] = useState(null);
+
+  const isFirstRender = useRef(true);
+  const [modelData, setModelData] = useState(null)
+  const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
 
       //TEMPLATE DATA
-      //let response = await model(template_data);
+      let response = await model(template_data)
+      setModelData(response.data)
 
       //APP FORM
       // let response = await model(props.projectData);
       // console.log(response.data);
-
-      let response = template_response
-
-      let baseline = await parseBaseline(response);
-      let reporting = await parseReporting(response);
-      let counterfactual = await parseCounterfactual(response);
-
-      let data = baseline.concat(reporting);
-      data = data.concat(counterfactual);
-
-      setData(data);
 
       return;
     };
     fetchData();
   }, []);
 
-  const parseBaseline = async (json) => {
+  useEffect(() => {
+
+    if(isFirstRender.current){
+      isFirstRender.current = false
+      return
+    }
+    const parseData = async () => {
+      let baseline = await parseBaseline(modelData);
+      let reporting = await parseReporting(modelData);
+      let counterfactual = await parseCounterfactual(modelData);
+
+      let chartData = baseline.concat(reporting);
+      chartData = chartData.concat(counterfactual);
+
+      setChartData(chartData);
+
+      return
+    }
+    parseData()
+  }, [modelData])
+
+  const parseBaseline = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
-    json.baseline_datetime.forEach((date, index) => {
+    data.baseline_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
         condition: "baseline",
-        eload: +json.baseline_eload[index],
+        eload: +data.baseline_eload[index],
       };
       result.push(aux);
     });
     return result;
   };
 
-  const parseReporting = async (json) => {
+  const parseReporting = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
-    json.reporting_datetime.forEach((date, index) => {
+    data.reporting_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
         condition: "reporting",
-        eload: +json.reporting_eload[index],
+        eload: +data.reporting_eload[index],
       };
       result.push(aux);
     });
     return result;
   };
 
-  const parseCounterfactual = async (json) => {
+  const parseCounterfactual = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
-    json.reporting_datetime.forEach((date, index) => {
+    data.reporting_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
         condition: "counterfactual",
-        eload: +json.reporting_counterfactual_usage[index],
+        eload: +data.reporting_counterfactual_usage[index],
       };
       result.push(aux);
     });
@@ -84,8 +96,11 @@ const Model = (props) => {
   return (
     <div className="model-chart">
       <h1>Model</h1>
-      <div className="item model">
-        {data ? <ModelChart data={data}></ModelChart> : null}
+      <div className="item">
+        {chartData ? <ModelChart data={chartData}></ModelChart> : null}
+      </div>
+      <div className="item">
+        {modelData ? <h4>Energy savings: {modelData.meter_savings.toFixed(2)}</h4> : null}
       </div>
       <div className="item">
         <button onClick={props.prevFormStep}>Back</button>

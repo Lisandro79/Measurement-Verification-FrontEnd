@@ -99,7 +99,7 @@ function BaselineReporting(props) {
 
     //convert to int
 
-    
+
     setSplittedData(current => ({ ...current, "baseline": baseline }))
     setSplittedData(current => ({ ...current, "reporting": reporting }))
   };
@@ -159,7 +159,7 @@ function BaselineReporting(props) {
 
   const saveVectors = async () => {
 
-    for(const period in splittedData){
+    for (const period in splittedData) {
       let date = [];
       let eload = [];
       let temp = [];
@@ -260,6 +260,10 @@ function BaselineReporting(props) {
           <button onClick={onClickModel}>Model</button>
         </div>
       ) : null}
+
+      <button onClick={onClickModel}>Model</button>
+      <button onClick={props.prevFormStep}>Back</button>
+
     </div>
   );
 }

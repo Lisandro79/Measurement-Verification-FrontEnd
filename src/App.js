@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./assets/App.css";
 import Navbar from "./components/Navbar";
-import BaselineReporting from "./components/forms/BaselineReporting";
-import Model from "./components/forms/Model";
-import ProjectInfo from "./components/forms/ProjectInfo";
+import BaselineReporting from "./components/form/BaselineReporting";
+import Model from "./components/form/Model";
+import ProjectInfo from "./components/form/ProjectInfo";
 
 const App = () => {
-  const [showProjectInfo, setShowProjectInfo] = useState(true);
-  const [showBaselineReporting, setShowBaselineReporting] = useState(false);
-  const [showModel, setShowModel] = useState(false);
   const [projectData, setProjectData] = useState({});
+  const [formStep, setFormStep] = useState(1);
+
+  const nextFormStep = () => {
+    setFormStep(formStep + 1);
+  };
+
+  const prevFormStep = () => {
+    setFormStep(formStep - 1);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -27,67 +33,58 @@ const App = () => {
     }))
   }
 
-  const clickProjectInfo = () => {
-    setShowProjectInfo(true);
-    setShowBaselineReporting(false);
-    setShowModel(false);
-  };
-
-  const clickBaselineReport = () => {
-    setShowBaselineReporting(true);
-    setShowModel(false);
-    setShowProjectInfo(false);
-  };
-
-  const clickModel = () => {
-    setShowModel(true);
-    setShowProjectInfo(false);
-    setShowBaselineReporting(false);
-  };
-
   const getFormComponent = () => {
-    if (showProjectInfo)
-      return (
-        <ProjectInfo
-          handleChange={handleChange}
-          clickBaselineReport={clickBaselineReport}
-        ></ProjectInfo>
-      );
-    if (showBaselineReporting)
-      return (
-        <BaselineReporting
-          handleChange={handleChange}
-          handleDateChange={handleDateChange}
+    switch (formStep) {
+      case 1:
+        return (
+          <ProjectInfo
+            projectData={projectData}
+            handleChange={handleChange}
+            nextFormStep={nextFormStep}
+          ></ProjectInfo>
+        )
+
+      case 2:
+        return (
+          <BaselineReporting
+            handleChange={handleChange}
+            handleDateChange={handleDateChange}
+            projectData={projectData}
+            setProjectData={setProjectData}
+            nextFormStep={nextFormStep}
+            prevFormStep={prevFormStep}
+          ></BaselineReporting>
+        )
+
+      case 3:
+        return (
+          <Model 
           projectData={projectData}
-          setProjectData={setProjectData}
-          clickModel={clickModel}
-        ></BaselineReporting>
-      );
-    if (showModel) return <Model projectData={projectData}></Model>;
+          prevFormStep={prevFormStep}
+          ></Model>
+        )
+    }
   };
 
   return (
     <div className="app">
       <Navbar></Navbar>
       <div className="tab-selector">
-        <button
-          className={showProjectInfo ? "active-button" : null}
-          onClick={clickProjectInfo}
+        <h4
+          className={formStep === 1 ? "active-form" : null}
         >
           Project info
-        </button>
-        <button
-          className={showBaselineReporting ? "active-button" : null}
-          onClick={clickBaselineReport}
+        </h4>
+        <h4
+          className={formStep === 2 ? "active-form" : null}
         >
           Baseline & reporting
-        </button>
-        <button
-          className={showModel ? "active-button" : null}
-          onClick={clickModel}
+        </h4>
+        <h4
+          className={formStep === 3 ? "active-form" : null}
         >
           Model
-        </button>
+        </h4>
       </div>
       <div className="form">{getFormComponent()}</div>
     </div>

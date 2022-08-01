@@ -2,28 +2,33 @@ import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
-import template_data from "./template_data.json"
-import template_response from "./template_response.json"
+import template_data from "./template_data.json";
+import template_response from "./template_response.json";
 
 const Model = (props) => {
-
   const isFirstRender = useRef(true);
-  const [modelData, setModelData] = useState(null)
+  const [modelData, setModelData] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-
-      setIsLoading(true)
+      setIsLoading(true);
 
       //TEMPLATE DATA
-      let response = await model(template_data)
-      setModelData(response.data)
+      let response = await model(template_data);
 
       //APP FORM
       // let response = await model(props.projectData);
       // console.log(response.data);
+
+      if (response.data === undefined) {
+        setErrorMsg("There was an error, please try again");
+        setIsLoading(false);
+      }
+
+      setModelData(response.data);
 
       return;
     };
@@ -31,10 +36,9 @@ const Model = (props) => {
   }, []);
 
   useEffect(() => {
-
-    if(isFirstRender.current){
-      isFirstRender.current = false
-      return
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
     const parseData = async () => {
       let baseline = await parseBaseline(modelData);
@@ -44,13 +48,13 @@ const Model = (props) => {
       let chartData = baseline.concat(reporting);
       chartData = chartData.concat(counterfactual);
 
-      setIsLoading(false)
+      setIsLoading(false);
       setChartData(chartData);
 
-      return
-    }
-    parseData()
-  }, [modelData])
+      return;
+    };
+    parseData();
+  }, [modelData]);
 
   const parseBaseline = async (data) => {
     let result = [];
@@ -101,15 +105,21 @@ const Model = (props) => {
     <div className="model-chart">
       <h1>Model</h1>
       <div className="item">
-        {isLoading ? <h4>Fitting Model in Progress...</h4> : null}
+        {isLoading ? (
+          <h4>Fitting model in progress...</h4>
+        ) : (
+          <h4>{errorMsg}</h4>
+        )}
       </div>
       <div className="item">
         {chartData ? <ModelChart data={chartData}></ModelChart> : null}
       </div>
       <div className="item">
-        {modelData ? <h4>Energy savings: {modelData.meter_savings.toFixed(2)} kWh</h4> : null}
+        {modelData ? (
+          <h4>Energy savings: {modelData.meter_savings.toFixed(2)} kWh</h4>
+        ) : null}
       </div>
-      <div className="item">
+      <div className="item prev-back">
         <button onClick={props.prevFormStep}>Back</button>
       </div>
     </div>

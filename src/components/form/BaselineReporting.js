@@ -2,18 +2,19 @@
 import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
-import * as d3 from 'd3';
+import * as d3 from "d3";
+import CsvSpecs from "../../text/CsvSpecs";
 
 const csv = require("jquery-csv");
 
 function BaselineReporting(props) {
-
   const [inputCsv, setInputCsv] = useState(null);
   const [projectDataComplete, setProjectDataComplete] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(null);
-  const [parsedData, setParsedData] = useState({})
-  const [splittedData, setSplittedData] = useState({})
-  const [formattedData, setFormattedData] = useState({})
+  const [plotErrorMsg, setPlotErrorMsg] = useState(null);
+  const [modelErrorMsg, setModelErrorMsg] = useState(null);
+  const [parsedData, setParsedData] = useState({});
+  const [splittedData, setSplittedData] = useState({});
+  const [formattedData, setFormattedData] = useState({});
 
   useEffect(() => {
     if (
@@ -28,20 +29,18 @@ function BaselineReporting(props) {
   }, [props.projectData]);
 
   useEffect(() => {
-
     const formatData = async () => {
       if (Object.keys(splittedData).length === 2) {
-
         let baseline = await arrayToCsv(splittedData.baseline);
         let reporting = await arrayToCsv(splittedData.reporting);
         reporting = "time,eload,temp\n" + reporting;
 
-        setFormattedData(current => ({ ...current, "baseline": baseline }))
-        setFormattedData(current => ({ ...current, "reporting": reporting }))
+        setFormattedData((current) => ({ ...current, baseline: baseline }));
+        setFormattedData((current) => ({ ...current, reporting: reporting }));
       }
-      return
-    }
-    formatData()
+      return;
+    };
+    formatData();
   }, [splittedData.baseline, splittedData.reporting]);
 
   useEffect(() => {
@@ -49,7 +48,7 @@ function BaselineReporting(props) {
       let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
       for (const period in formattedData) {
-        let parsedPeriod = d3.csvParse(formattedData[period])
+        let parsedPeriod = d3.csvParse(formattedData[period]);
 
         parsedPeriod.forEach((d) => {
           d.time = parseTime(d.time);
@@ -57,11 +56,11 @@ function BaselineReporting(props) {
           d.temp = +d.temp;
         });
 
-        setParsedData(current => ({ ...current, [period]: parsedPeriod }))
+        setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
       }
-      return
-    }
-    parseData()
+      return;
+    };
+    parseData();
   }, [formattedData.baseline, formattedData.reporting]);
 
   const handleFileChange = (e) => {
@@ -83,13 +82,15 @@ function BaselineReporting(props) {
     if (!validateDates()) {
       return;
     }
-    splitData()
+    splitData();
   };
 
   const splitData = () => {
     const data = csv.toArrays(inputCsv);
 
-    const startReportingDate = formatDate(props.projectData.dates.start_reporting);
+    const startReportingDate = formatDate(
+      props.projectData.dates.start_reporting
+    );
 
     const limit = data.find((element) => element[0] === startReportingDate);
 
@@ -99,18 +100,16 @@ function BaselineReporting(props) {
 
     //convert to int
 
-
-    setSplittedData(current => ({ ...current, "baseline": baseline }))
-    setSplittedData(current => ({ ...current, "reporting": reporting }))
+    setSplittedData((current) => ({ ...current, baseline: baseline }));
+    setSplittedData((current) => ({ ...current, reporting: reporting }));
   };
 
   const validateDates = () => {
-
-    let dates = []
+    let dates = [];
 
     for (let date in props.projectData.dates) {
-      date = formatDate(props.projectData.dates[date])
-      dates.push(date)
+      date = formatDate(props.projectData.dates[date]);
+      dates.push(date);
     }
 
     if (datesInCsv(dates) && checkDatesRanges()) {
@@ -129,36 +128,36 @@ function BaselineReporting(props) {
       idx++;
     }
 
-    foundAllDates ? setErrorMsg(null) : setErrorMsg("Check that the dates are in the csv")
+    foundAllDates
+      ? setPlotErrorMsg(null)
+      : setPlotErrorMsg("Check that the dates are in the csv");
 
-    return foundAllDates
+    return foundAllDates;
   };
 
   const checkDatesRanges = () => {
     if (props.projectData.start_baseline >= props.projectData.end_baseline) {
-      setErrorMsg("Start baseline date has to be prior to end baseline date")
-      return false
+      setPlotErrorMsg("Start baseline date has to be prior to end baseline date");
+      return false;
     }
     if (props.projectData.start_reporting >= props.projectData.end_reporting) {
-      setErrorMsg("Start reporting date has to be prior to end reporting date")
-      return false
+      setPlotErrorMsg("Start reporting date has to be prior to end reporting date");
+      return false;
     }
     if (props.projectData.end_baseline >= props.projectData.start_reporting) {
-      setErrorMsg("End baseline date has to be after start reporting date")
-      return false
+      setPlotErrorMsg("End baseline date has to be after start reporting date");
+      return false;
     }
-    setErrorMsg(null)
-    return true
+    setPlotErrorMsg(null);
+    return true;
   };
 
   const onClickModel = async () => {
     await saveVectors();
-    //props.clickModel()
-    props.nextFormStep()
+    props.nextFormStep();
   };
 
   const saveVectors = async () => {
-
     for (const period in splittedData) {
       let date = [];
       let eload = [];
@@ -176,22 +175,30 @@ function BaselineReporting(props) {
       temp.shift();
 
       //parse string to int
-      eload = await arrStringToNum(eload)
-      temp = await arrStringToNum(temp)
+      eload = await arrStringToNum(eload);
+      temp = await arrStringToNum(temp);
 
-      props.setProjectData((values) => ({ ...values, [`${period}_datetime`]: date }));
-      props.setProjectData((values) => ({ ...values, [`${period}_eload`]: eload }));
-      props.setProjectData((values) => ({ ...values, [`${period}_temp`]: temp }));
+      props.setProjectData((values) => ({
+        ...values,
+        [`${period}_datetime`]: date,
+      }));
+      props.setProjectData((values) => ({
+        ...values,
+        [`${period}_eload`]: eload,
+      }));
+      props.setProjectData((values) => ({
+        ...values,
+        [`${period}_temp`]: temp,
+      }));
     }
-  }
+  };
 
   return (
     <div className="form-component">
       <h1>Baseline & reporting</h1>
       <div className="item">
         <h3>Upload building data</h3>
-        <i>CSV specs</i>
-        <p>Choose file</p>
+        <CsvSpecs></CsvSpecs>
         <input type="file" accept=".csv" onChange={handleFileChange} />
       </div>
       <div className="item">
@@ -237,7 +244,7 @@ function BaselineReporting(props) {
         </div>
       ) : null}
 
-      {errorMsg}
+      {plotErrorMsg}
 
       <div className="item">
         <h3>Baseline period</h3>
@@ -255,14 +262,17 @@ function BaselineReporting(props) {
         ) : null}
       </div>
 
-      {projectDataComplete ? (
-        <div className="item">
+      {modelErrorMsg}
+
+      <div className="item prev-back">
+        <button className="back" onClick={props.prevFormStep}>
+          Back
+        </button>
+
+        {projectDataComplete ? (
           <button onClick={onClickModel}>Model</button>
-        </div>
-      ) : null}
-
-      <button onClick={props.prevFormStep}>Back</button>
-
+        ) : null}
+      </div>
     </div>
   );
 }

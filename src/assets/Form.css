@@ -1,7 +1,19 @@
-.item{
+.item {
     padding: 20px 0px 20px 0px
 }
 
 button {
-float: right;
+    float: right
+}
+
+.prev-back {
+    display: flex;
+    justify-content: space-between;
+}
+
+button:disabled,
+button[disabled]{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
 }

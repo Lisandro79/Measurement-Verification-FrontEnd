@@ -1,6 +1,24 @@
 import "../../assets/Form.css";
+import React, { useState, useEffect } from "react";
 
 function ProjectInfo( props ) {
+
+  const [projectInfoComplete, setProjectInfoComplete] = useState(false);
+
+  useEffect(() => {
+    if (
+      props.projectData.project_name &&
+      props.projectData.city &&
+      props.projectData.zip_code &&
+      props.projectData.building_type &&
+      props.projectData.price_kWh &&
+      props.projectData.measures_installed &&
+      props.projectData.date_installation
+    ) {
+      setProjectInfoComplete(true);
+    }
+  }, [props.projectData]);
+
   return (
     <div className="form-component">
       <h1>Project Info</h1>
@@ -45,7 +63,7 @@ function ProjectInfo( props ) {
         <p>Date of installation</p>
         <input type="date" onChange={props.handleChange} name="date_installation" />
       </div>
-      <button onClick={props.nextFormStep}>Next</button>
+      <button disabled={projectInfoComplete ? false : true} onClick={props.nextFormStep}>Next</button>
     </div>
   );
 }

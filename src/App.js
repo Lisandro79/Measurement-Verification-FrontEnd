@@ -38,6 +38,7 @@ const App = () => {
       case 1:
         return (
           <ProjectInfo
+            projectData={projectData}
             handleChange={handleChange}
             nextFormStep={nextFormStep}
           ></ProjectInfo>
@@ -69,21 +70,21 @@ const App = () => {
     <div className="app">
       <Navbar></Navbar>
       <div className="tab-selector">
-        <h3
+        <h4
           className={formStep === 1 ? "active-form" : null}
         >
           Project info
-        </h3>
-        <h3
+        </h4>
+        <h4
           className={formStep === 2 ? "active-form" : null}
         >
           Baseline & reporting
-        </h3>
-        <h3
+        </h4>
+        <h4
           className={formStep === 3 ? "active-form" : null}
         >
           Model
-        </h3>
+        </h4>
       </div>
       <div className="form">{getFormComponent()}</div>
     </div>

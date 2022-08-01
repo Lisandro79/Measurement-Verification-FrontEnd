@@ -11,7 +11,7 @@ button {
   font-weight: 500;
   line-height: 20px;
   list-style: none;
-  margin: 20px;
+  margin-bottom: 20px;
   padding: 10px 12px;
   text-align: center;
   transition: all 200ms;

@@ -2,8 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
-import template_data from "./template_data.json";
-import template_response from "./template_response.json";
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -16,12 +14,9 @@ const Model = (props) => {
     const fetchData = async () => {
       setIsLoading(true);
 
-      //TEMPLATE DATA
-      let response = await model(template_data);
-
       //APP FORM
-      // let response = await model(props.projectData);
-      // console.log(response.data);
+      let response = await model(props.projectData);
+      console.log(response.data);
 
       if (response.data === undefined) {
         setErrorMsg("There was an error, please try again");

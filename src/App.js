@@ -69,21 +69,21 @@ const App = () => {
     <div className="app">
       <Navbar></Navbar>
       <div className="tab-selector">
-        <button
-          className={formStep === 1 ? "active-button" : null}
+        <h3
+          className={formStep === 1 ? "active-form" : null}
         >
           Project info
-        </button>
-        <button
-          className={formStep === 2 ? "active-button" : null}
+        </h3>
+        <h3
+          className={formStep === 2 ? "active-form" : null}
         >
           Baseline & reporting
-        </button>
-        <button
-          className={formStep === 3 ? "active-button" : null}
+        </h3>
+        <h3
+          className={formStep === 3 ? "active-form" : null}
         >
           Model
-        </button>
+        </h3>
       </div>
       <div className="form">{getFormComponent()}</div>
     </div>

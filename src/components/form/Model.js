@@ -10,9 +10,12 @@ const Model = (props) => {
   const isFirstRender = useRef(true);
   const [modelData, setModelData] = useState(null)
   const [chartData, setChartData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
+
+      setIsLoading(true)
 
       //TEMPLATE DATA
       let response = await model(template_data)
@@ -41,6 +44,7 @@ const Model = (props) => {
       let chartData = baseline.concat(reporting);
       chartData = chartData.concat(counterfactual);
 
+      setIsLoading(false)
       setChartData(chartData);
 
       return
@@ -97,10 +101,13 @@ const Model = (props) => {
     <div className="model-chart">
       <h1>Model</h1>
       <div className="item">
+        {isLoading ? <h4>Fitting Model in Progress...</h4> : null}
+      </div>
+      <div className="item">
         {chartData ? <ModelChart data={chartData}></ModelChart> : null}
       </div>
       <div className="item">
-        {modelData ? <h4>Energy savings: {modelData.meter_savings.toFixed(2)}</h4> : null}
+        {modelData ? <h4>Energy savings: {modelData.meter_savings.toFixed(2)} kWh</h4> : null}
       </div>
       <div className="item">
         <button onClick={props.prevFormStep}>Back</button>

@@ -261,7 +261,6 @@ function BaselineReporting(props) {
         </div>
       ) : null}
 
-      <button onClick={onClickModel}>Model</button>
       <button onClick={props.prevFormStep}>Back</button>
 
     </div>

@@ -16,7 +16,6 @@ const Model = (props) => {
 
       //APP FORM
       let response = await model(props.projectData);
-      console.log(response.data);
 
       if (response.data === undefined) {
         setErrorMsg("There was an error, please try again");

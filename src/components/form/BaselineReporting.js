@@ -6,6 +6,7 @@ import * as d3 from "d3";
 import CsvSpecs from "../../text/CsvSpecs";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import Alert from "@mui/material/Alert";
 
 const csv = require("jquery-csv");
 
@@ -146,20 +147,28 @@ function BaselineReporting(props) {
   };
 
   const checkDatesRanges = () => {
-    
-    if (props.projectData.dates.start_baseline >= props.projectData.dates.end_baseline) {
+    if (
+      props.projectData.dates.start_baseline >=
+      props.projectData.dates.end_baseline
+    ) {
       setPlotErrorMsg(
         "Start baseline date has to be prior to end baseline date"
       );
       return false;
     }
-    if (props.projectData.dates.start_reporting >= props.projectData.dates.end_reporting) {
+    if (
+      props.projectData.dates.start_reporting >=
+      props.projectData.dates.end_reporting
+    ) {
       setPlotErrorMsg(
         "Start reporting date has to be prior to end reporting date"
       );
       return false;
     }
-    if (props.projectData.dates.end_baseline >= props.projectData.dates.start_reporting) {
+    if (
+      props.projectData.dates.end_baseline >=
+      props.projectData.dates.start_reporting
+    ) {
       setPlotErrorMsg("End baseline date has to be after start reporting date");
       return false;
     }
@@ -306,7 +315,7 @@ function BaselineReporting(props) {
         </div>
       ) : null}
 
-      {plotErrorMsg}
+      {plotErrorMsg ? <Alert severity="warning">{plotErrorMsg}</Alert> : null}
 
       <div className="item">
         <h3>Baseline period</h3>
@@ -324,7 +333,7 @@ function BaselineReporting(props) {
         ) : null}
       </div>
 
-      {modelErrorMsg}
+      {modelErrorMsg ? <Alert severity="warning">{modelErrorMsg}</Alert> : null}
 
       <div className="item prev-back">
         <Button sx={{ my: 2 }} variant="contained" onClick={props.prevFormStep}>

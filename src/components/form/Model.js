@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
+import Button from "@mui/material/Button";
 import template_data from "./template_data.json"
 
 const Model = (props) => {
@@ -122,7 +123,9 @@ const Model = (props) => {
         ) : null}
       </div>
       <div className="item prev-back">
-        <button onClick={props.prevFormStep}>Back</button>
+        <Button sx={{ my: 2 }} variant="contained" onClick={props.prevFormStep}>
+          Back
+        </Button>
       </div>
     </div>
   );

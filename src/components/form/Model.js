@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
+import template_data from "./template_data.json"
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -14,8 +15,11 @@ const Model = (props) => {
     const fetchData = async () => {
       setIsLoading(true);
 
+      //HARDCODED
+      let response = await model(template_data)
+
       //APP FORM
-      let response = await model(props.projectData);
+      //let response = await model(props.projectData);
 
       if (response.data === undefined) {
         setErrorMsg("There was an error, please try again");
@@ -49,6 +53,10 @@ const Model = (props) => {
     };
     parseData();
   }, [modelData]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const parseBaseline = async (data) => {
     let result = [];

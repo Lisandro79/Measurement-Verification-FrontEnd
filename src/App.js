@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import React, { useEffect, useState } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./assets/App.css";
 import Navbar from "./components/Navbar";
 import BaselineReporting from "./components/form/BaselineReporting";
@@ -12,12 +12,13 @@ const theme = createTheme({
   },
   palette: {
     primary: {
-      main: '#31ac9cd7',
-      contrastText: "#ffffff"
+      main: "#31ac9cd7",
+      contrastText: "#ffffff",
     },
   },
-  
 });
+
+
 
 const App = () => {
   const [projectData, setProjectData] = useState({});
@@ -35,6 +36,10 @@ const App = () => {
     end_reporting: null,
   });
 
+  // useEffect(() => {
+  //   console.log(projectData);
+  // }, [projectData]);
+
   const nextFormStep = () => {
     setFormStep(formStep + 1);
   };
@@ -49,7 +54,8 @@ const App = () => {
   };
 
   const handleDateChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    value = value.slice(0, -2) + "00"; //rounded hour
     setProjectData((current) => ({
       ...current,
       dates: {

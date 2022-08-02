@@ -63,6 +63,10 @@ function BaselineReporting(props) {
     parseData();
   }, [formattedData.baseline, formattedData.reporting]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   const handleFileChange = (e) => {
     e.preventDefault();
 
@@ -130,7 +134,7 @@ function BaselineReporting(props) {
 
     foundAllDates
       ? setPlotErrorMsg(null)
-      : setPlotErrorMsg("Check that the dates are in the csv");
+      : setPlotErrorMsg("There is an error in the dates, please check them and try again");
 
     return foundAllDates;
   };
@@ -272,6 +276,7 @@ function BaselineReporting(props) {
         {projectDataComplete ? (
           <button onClick={onClickModel}>Model</button>
         ) : null}
+        <button onClick={onClickModel}>Model</button>
       </div>
     </div>
   );

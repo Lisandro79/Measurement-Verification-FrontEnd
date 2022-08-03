@@ -18,27 +18,28 @@ const theme = createTheme({
   },
 });
 
-
-
 const App = () => {
-  const [projectData, setProjectData] = useState({});
   const [formStep, setFormStep] = useState(1);
-  const [formData, setFormData] = useState({
-    project_name: null,
-    city: null,
-    zip_code: null,
-    price_kWh: null,
-    measures_installed: null,
-    date_installation: null,
-    start_baseline: null,
-    end_baseline: null,
-    start_reporting: null,
-    end_reporting: null,
+  const [projectData, setProjectData] = useState({
+    project_name: "",
+    city: "",
+    zip_code: "",
+    building_type: "",
+    price_kWh: "",
+    measures_installed: "",
+    date_installation: "",
+    dates: {
+      start_baseline: "",
+      end_baseline: "",
+      start_reporting: "",
+      end_reporting: "",
+    },
+    
   });
 
-  // useEffect(() => {
-  //   console.log(projectData);
-  // }, [projectData]);
+  useEffect(() => {
+    console.log(projectData);
+  }, [projectData]);
 
   const nextFormStep = () => {
     setFormStep(formStep + 1);
@@ -65,7 +66,7 @@ const App = () => {
     }));
   };
 
-  const getFormComponent = () => {
+  const getFormStep = () => {
     switch (formStep) {
       case 1:
         return (
@@ -108,7 +109,7 @@ const App = () => {
           </h4>
           <h4 className={formStep === 3 ? "active-form" : null}>Model</h4>
         </div>
-        <div className="form">{getFormComponent()}</div>
+        <div className="form">{getFormStep()}</div>
       </div>
     </ThemeProvider>
   );

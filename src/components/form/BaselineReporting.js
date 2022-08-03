@@ -1,4 +1,3 @@
-// import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
@@ -12,7 +11,7 @@ const csv = require("jquery-csv");
 
 function BaselineReporting(props) {
   const [inputCsv, setInputCsv] = useState(null);
-  const [projectDataComplete, setProjectDataComplete] = useState(false);
+  const [fieldsCompleted, setFieldsCompleted] = useState(false);
   const [plotErrorMsg, setPlotErrorMsg] = useState(null);
   const [modelErrorMsg, setModelErrorMsg] = useState(null);
   const [parsedData, setParsedData] = useState({});
@@ -28,9 +27,9 @@ function BaselineReporting(props) {
       props.projectData.dates.start_reporting &&
       props.projectData.dates.end_reporting
     ) {
-      setProjectDataComplete(true);
+      setFieldsCompleted(true);
     }
-  }, [props.projectData]);
+  }, [props.projectData, inputCsv]);
 
   useEffect(() => {
     const formatData = async () => {
@@ -251,7 +250,7 @@ function BaselineReporting(props) {
               shrink: true,
             }}
             size="small"
-            value={props.projectData.start_baseline}
+            value={props.projectData.dates.start_baseline}
           />
         </div>
         <p>
@@ -268,7 +267,7 @@ function BaselineReporting(props) {
               shrink: true,
             }}
             size="small"
-            value={props.projectData.end_baseline}
+            value={props.projectData.dates.end_baseline}
           />
         </div>
         <p>
@@ -285,7 +284,7 @@ function BaselineReporting(props) {
               shrink: true,
             }}
             size="small"
-            value={props.projectData.start_reporting}
+            value={props.projectData.dates.start_reporting}
           />
         </div>
         <p>
@@ -302,18 +301,21 @@ function BaselineReporting(props) {
               shrink: true,
             }}
             size="small"
-            //value={props.projectData.dates.start_baseline}
+            value={props.projectData.dates.end_reporting}
           />
         </div>
       </div>
 
-      {projectDataComplete ? (
-        <div className="item">
-          <Button sx={{ my: 2 }} variant="contained" onClick={createChart}>
-            Plot
-          </Button>
-        </div>
-      ) : null}
+      <div className="item">
+        <Button
+          sx={{ my: 2 }}
+          variant="contained"
+          disabled={fieldsCompleted ? false : true}
+          onClick={createChart}
+        >
+          Plot
+        </Button>
+      </div>
 
       {plotErrorMsg ? <Alert severity="warning">{plotErrorMsg}</Alert> : null}
 
@@ -340,12 +342,12 @@ function BaselineReporting(props) {
           Back
         </Button>
 
-        {projectDataComplete ? (
-          <Button sx={{ my: 2 }} variant="contained" onClick={onClickModel}>
-            Model
-          </Button>
-        ) : null}
-        <Button sx={{ my: 2 }} variant="contained" onClick={onClickModel}>
+        <Button
+          sx={{ my: 2 }}
+          variant="contained"
+          disabled={fieldsCompleted ? false : true}
+          onClick={onClickModel}
+        >
           Model
         </Button>
       </div>

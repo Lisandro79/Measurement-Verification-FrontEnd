@@ -5,7 +5,8 @@ import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 
 function ProjectInfo(props) {
-  const [projectInfoComplete, setProjectInfoComplete] = useState(false);
+  
+  const [fieldsCompleted, setFieldsCompleted] = useState(false);
 
   useEffect(() => {
     if (
@@ -17,7 +18,7 @@ function ProjectInfo(props) {
       props.projectData.measures_installed &&
       props.projectData.date_installation
     ) {
-      setProjectInfoComplete(true);
+      setFieldsCompleted(true);
     }
   }, [props.projectData]);
 
@@ -134,6 +135,7 @@ function ProjectInfo(props) {
                   shrink: true,
                 }}
                 value={props.projectData.date_installation}
+                size="small"
               />
             </div>
           </div>
@@ -141,7 +143,7 @@ function ProjectInfo(props) {
         <Button
           sx={{ my: 2 }}
           variant="contained"
-          disabled={projectInfoComplete ? false : true}
+          disabled={fieldsCompleted ? false : true}
           onClick={props.nextFormStep}
         >
           Next

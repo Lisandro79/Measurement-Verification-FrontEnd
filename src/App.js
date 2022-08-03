@@ -4,7 +4,6 @@ import "./assets/App.css";
 import Navbar from "./components/Navbar";
 import BaselineReporting from "./components/form/BaselineReporting";
 import Model from "./components/form/Model";
-import MyStepper from "./components/form/FormStepper";
 import ProjectInfo from "./components/form/ProjectInfo";
 
 const theme = createTheme({
@@ -110,7 +109,6 @@ const App = () => {
           </h4>
           <h4 className={formStep === 3 ? "active-form" : null}>Model</h4>
         </div>
-        <MyStepper></MyStepper>
         <div className="form">{getFormStep()}</div>
       </div>
     </ThemeProvider>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
 import * as d3 from "d3";
-import CsvSpecs from "../../text/CsvSpecs";
+import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
@@ -346,6 +346,13 @@ function BaselineReporting(props) {
           sx={{ my: 2 }}
           variant="contained"
           disabled={fieldsCompleted ? false : true}
+          onClick={onClickModel}
+        >
+          Model
+        </Button>
+        <Button
+          sx={{ my: 2 }}
+          variant="contained"
           onClick={onClickModel}
         >
           Model

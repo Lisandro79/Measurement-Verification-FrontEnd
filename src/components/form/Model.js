@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { model } from "../../api/model";
 import Button from "@mui/material/Button";
 import template_data from "./template_data.json"
+import template_response from "./template_response.json"
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -17,17 +18,20 @@ const Model = (props) => {
       setIsLoading(true);
 
       //HARDCODED
-      let response = await model(template_data)
+      //let response = await model(template_data)
 
       //APP FORM
       //let response = await model(props.projectData);
 
-      if (response.data === undefined) {
-        setErrorMsg("There was an error, please try again");
-        setIsLoading(false);
-      }
+      // if (response.data === undefined) {
+      //   setErrorMsg("There was an error, please try again");
+      //   setIsLoading(false);
+      // }
 
-      setModelData(response.data);
+      //setModelData(response.data);
+
+      //WITHOUT BACKEND
+      setModelData(template_response)
 
       return;
     };

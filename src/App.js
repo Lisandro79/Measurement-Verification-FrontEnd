@@ -37,10 +37,6 @@ const App = () => {
     
   });
 
-  useEffect(() => {
-    console.log(projectData);
-  }, [projectData]);
-
   const nextFormStep = () => {
     setFormStep(formStep + 1);
   };

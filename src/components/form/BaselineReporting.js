@@ -1,20 +1,23 @@
-// import './BaselineReporting.css';
 import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
 import * as d3 from "d3";
-import CsvSpecs from "../../text/CsvSpecs";
+import CsvSpecs from "../../components/text/CsvSpecs";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Alert from "@mui/material/Alert";
 
 const csv = require("jquery-csv");
 
 function BaselineReporting(props) {
   const [inputCsv, setInputCsv] = useState(null);
-  const [projectDataComplete, setProjectDataComplete] = useState(false);
+  const [fieldsCompleted, setFieldsCompleted] = useState(false);
   const [plotErrorMsg, setPlotErrorMsg] = useState(null);
   const [modelErrorMsg, setModelErrorMsg] = useState(null);
   const [parsedData, setParsedData] = useState({});
   const [splittedData, setSplittedData] = useState({});
   const [formattedData, setFormattedData] = useState({});
+  const [fileName, setFileName] = useState(null);
 
   useEffect(() => {
     if (
@@ -24,9 +27,9 @@ function BaselineReporting(props) {
       props.projectData.dates.start_reporting &&
       props.projectData.dates.end_reporting
     ) {
-      setProjectDataComplete(true);
+      setFieldsCompleted(true);
     }
-  }, [props.projectData]);
+  }, [props.projectData, inputCsv]);
 
   useEffect(() => {
     const formatData = async () => {
@@ -63,11 +66,16 @@ function BaselineReporting(props) {
     parseData();
   }, [formattedData.baseline, formattedData.reporting]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleFileChange = (e) => {
     e.preventDefault();
 
     const reader = new FileReader();
     reader.onload = function () {
+      setFileName(e.target.files[0].name);
       validateFile(reader.result);
     };
     reader.readAsBinaryString(e.target.files[0]);
@@ -130,21 +138,36 @@ function BaselineReporting(props) {
 
     foundAllDates
       ? setPlotErrorMsg(null)
-      : setPlotErrorMsg("Check that the dates are in the csv");
+      : setPlotErrorMsg(
+          "There is an error in the dates, please check them and try again"
+        );
 
     return foundAllDates;
   };
 
   const checkDatesRanges = () => {
-    if (props.projectData.start_baseline >= props.projectData.end_baseline) {
-      setPlotErrorMsg("Start baseline date has to be prior to end baseline date");
+    if (
+      props.projectData.dates.start_baseline >=
+      props.projectData.dates.end_baseline
+    ) {
+      setPlotErrorMsg(
+        "Start baseline date has to be prior to end baseline date"
+      );
       return false;
     }
-    if (props.projectData.start_reporting >= props.projectData.end_reporting) {
-      setPlotErrorMsg("Start reporting date has to be prior to end reporting date");
+    if (
+      props.projectData.dates.start_reporting >=
+      props.projectData.dates.end_reporting
+    ) {
+      setPlotErrorMsg(
+        "Start reporting date has to be prior to end reporting date"
+      );
       return false;
     }
-    if (props.projectData.end_baseline >= props.projectData.start_reporting) {
+    if (
+      props.projectData.dates.end_baseline >=
+      props.projectData.dates.start_reporting
+    ) {
       setPlotErrorMsg("End baseline date has to be after start reporting date");
       return false;
     }
@@ -199,52 +222,102 @@ function BaselineReporting(props) {
       <div className="item">
         <h3>Upload building data</h3>
         <CsvSpecs></CsvSpecs>
-        <input type="file" accept=".csv" onChange={handleFileChange} />
+        <Button
+          variant="contained"
+          component="label"
+          onChange={handleFileChange}
+          size="small"
+          sx={{ mr: 1 }}
+        >
+          Upload file
+          <input hidden accept=".csv" type="file" />
+        </Button>
+        <i>{fileName ? `Uploaded file: ${fileName}` : null}</i>
       </div>
       <div className="item">
         <h3>Dates</h3>
         <p>
           <b>Baseline start date</b>
         </p>
-        <input
-          type="datetime-local"
-          name="start_baseline"
-          onChange={props.handleDateChange}
-        />
+        <div>
+          <TextField
+            type="datetime-local"
+            step="3600"
+            name="start_baseline"
+            onChange={props.handleDateChange}
+            label="Baseline start date"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            size="small"
+            value={props.projectData.dates.start_baseline}
+          />
+        </div>
         <p>
           <b>Baseline end date</b>
         </p>
-        <input
-          type="datetime-local"
-          name="end_baseline"
-          onChange={props.handleDateChange}
-        />
+        <div>
+          <TextField
+            type="datetime-local"
+            step="3600"
+            name="end_baseline"
+            onChange={props.handleDateChange}
+            label="Baseline end date"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            size="small"
+            value={props.projectData.dates.end_baseline}
+          />
+        </div>
         <p>
           <b>Reporting start date</b>
         </p>
-        <input
-          type="datetime-local"
-          name="start_reporting"
-          onChange={props.handleDateChange}
-        />
+        <div>
+          <TextField
+            type="datetime-local"
+            step="3600"
+            name="start_reporting"
+            onChange={props.handleDateChange}
+            label="Reporting start date"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            size="small"
+            value={props.projectData.dates.start_reporting}
+          />
+        </div>
         <p>
           <b>Reporting end date</b>
         </p>
-        <input
-          type="datetime-local"
-          name="end_reporting"
-          onChange={props.handleDateChange}
-        />
-      </div>
-      <div className="item" />
-
-      {projectDataComplete ? (
-        <div className="item">
-          <button onClick={createChart}>Plot</button>
+        <div>
+          <TextField
+            type="datetime-local"
+            step="3600"
+            name="end_reporting"
+            onChange={props.handleDateChange}
+            label="Reporting end date"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            size="small"
+            value={props.projectData.dates.end_reporting}
+          />
         </div>
-      ) : null}
+      </div>
 
-      {plotErrorMsg}
+      <div className="item">
+        <Button
+          sx={{ my: 2 }}
+          variant="contained"
+          disabled={fieldsCompleted ? false : true}
+          onClick={createChart}
+        >
+          Plot
+        </Button>
+      </div>
+
+      {plotErrorMsg ? <Alert severity="warning">{plotErrorMsg}</Alert> : null}
 
       <div className="item">
         <h3>Baseline period</h3>
@@ -262,16 +335,28 @@ function BaselineReporting(props) {
         ) : null}
       </div>
 
-      {modelErrorMsg}
+      {modelErrorMsg ? <Alert severity="warning">{modelErrorMsg}</Alert> : null}
 
       <div className="item prev-back">
-        <button className="back" onClick={props.prevFormStep}>
+        <Button sx={{ my: 2 }} variant="contained" onClick={props.prevFormStep}>
           Back
-        </button>
+        </Button>
 
-        {projectDataComplete ? (
-          <button onClick={onClickModel}>Model</button>
-        ) : null}
+        <Button
+          sx={{ my: 2 }}
+          variant="contained"
+          disabled={fieldsCompleted ? false : true}
+          onClick={onClickModel}
+        >
+          Model
+        </Button>
+        <Button
+          sx={{ my: 2 }}
+          variant="contained"
+          onClick={onClickModel}
+        >
+          Model
+        </Button>
       </div>
     </div>
   );

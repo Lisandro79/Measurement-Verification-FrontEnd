@@ -2,6 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
+import Button from "@mui/material/Button";
+import template_data from "./template_data.json"
+import template_response from "./template_response.json"
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -11,18 +14,28 @@ const Model = (props) => {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
 
+      //HARDCODED
+      //let response = await model(template_data)
+
       //APP FORM
-      let response = await model(props.projectData);
+      //let response = await model(props.projectData);
 
-      if (response.data === undefined) {
-        setErrorMsg("There was an error, please try again");
-        setIsLoading(false);
-      }
+      // if (response.data === undefined) {
+      //   setErrorMsg("There was an error, please try again");
+      //   setIsLoading(false);
+      // }
 
-      setModelData(response.data);
+      //setModelData(response.data);
+
+      //WITHOUT BACKEND
+      setModelData(template_response)
 
       return;
     };
@@ -35,12 +48,11 @@ const Model = (props) => {
       return;
     }
     const parseData = async () => {
-      let baseline = await parseBaseline(modelData);
-      let reporting = await parseReporting(modelData);
-      let counterfactual = await parseCounterfactual(modelData);
+
+      let baseline = await parseBaseline(modelData)
+      let reporting = await parseReporting(modelData)
 
       let chartData = baseline.concat(reporting);
-      chartData = chartData.concat(counterfactual);
 
       setIsLoading(false);
       setChartData(chartData);
@@ -50,6 +62,7 @@ const Model = (props) => {
     parseData();
   }, [modelData]);
 
+  
   const parseBaseline = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
@@ -57,13 +70,14 @@ const Model = (props) => {
     data.baseline_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
-        condition: "baseline",
-        eload: +data.baseline_eload[index],
-      };
-      result.push(aux);
-    });
-    return result;
-  };
+        baseline_eload: +data.baseline_eload[index],
+        reporting_eload: 0,
+        reporting_counterfactual_usage: 0
+      }
+      result.push(aux)
+    })
+    return result
+  }
 
   const parseReporting = async (data) => {
     let result = [];
@@ -72,28 +86,14 @@ const Model = (props) => {
     data.reporting_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
-        condition: "reporting",
-        eload: +data.reporting_eload[index],
-      };
-      result.push(aux);
-    });
-    return result;
-  };
-
-  const parseCounterfactual = async (data) => {
-    let result = [];
-    let parseTime = d3.timeParse("%m/%d/%y %H:%M");
-
-    data.reporting_datetime.forEach((date, index) => {
-      let aux = {
-        datetime: parseTime(date),
-        condition: "counterfactual",
-        eload: +data.reporting_counterfactual_usage[index],
-      };
-      result.push(aux);
-    });
-    return result;
-  };
+        baseline_eload: 0,
+        reporting_eload: +data.reporting_eload[index],
+        reporting_counterfactual_usage: +data.reporting_counterfactual_usage[index]
+      }
+      result.push(aux)
+    })
+    return result
+  }
 
   return (
     <div className="model-chart">
@@ -114,7 +114,9 @@ const Model = (props) => {
         ) : null}
       </div>
       <div className="item prev-back">
-        <button onClick={props.prevFormStep}>Back</button>
+        <Button sx={{ my: 2 }} variant="contained" onClick={props.prevFormStep}>
+          Back
+        </Button>
       </div>
     </div>
   );

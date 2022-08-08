@@ -1,110 +1,131 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
 const PeriodChart = ({ data }) => {
-
   const dimensions = {
     width: 800,
     height: 400,
     margin: { top: 50, right: 60, bottom: 50, left: 60 },
   };
 
-  const svgRef = React.useRef(null);
+  const svgRef = useRef(null);
   const { width, height, margin = {} } = dimensions;
   const svgWidth = width + margin.left + margin.right;
   const svgHeight = height + margin.top + margin.bottom;
 
-  React.useEffect(() => {
+  useEffect(() => {
+    //zoom function
+    let zoom = d3
+      .zoom()
+      .on("zoom", (event) => {
+        xScale0
+          .domain(event.transform.rescaleX(xScale1).domain())
+          .range([0, width].map((d) => event.transform.applyX(d))); 
+
+        svg.select(".line0").attr("d", line0);
+        svg.select(".line1").attr("d", line1);
+
+        svg.select(".x-axis").call(d3.axisBottom(xScale0).tickSizeOuter(0));
+      })
+      .scaleExtent([1, 32]);
+
+    //x scale
+    let xScale0 = d3
+      .scaleTime()
+      .domain(
+        d3.extent(data, (d) => {
+          return d.time;
+        })
+      )
+      .range([0, width]);
+
+    //x scale for zoom
+    let xScale1 = d3
+      .scaleTime()
+      .domain(
+        d3.extent(data, (d) => {
+          return d.time;
+        })
+      )
+      .range([0, width]);
+
+    //y0 scale
+    const yScale0 = d3
+      .scaleLinear()
+      .domain([
+        0,
+        d3.max(data, (d) => {
+          return +d.eload;
+        }),
+      ])
+      .range([height, 0]);
+
+    // //y1 scale
+    let yScale1 = d3
+      .scaleLinear()
+      .domain([
+        0,
+        d3.max(data, (d) => {
+          return d.temp;
+        }),
+      ])
+      .range([height, 0]);
+
+    //first line (eload)
+    let line0 = d3
+      .line()
+      .x(function (d) {
+        return xScale0(d.time);
+      })
+      .y(function (d) {
+        return yScale0(d.eload);
+      });
+
+    //second line (temp)
+    let line1 = d3
+      .line()
+      .x(function (d) {
+        return xScale0(d.time);
+      })
+      .y(function (d) {
+        return yScale1(d.temp);
+      });
 
     //svg config
     const svgEl = d3.select(svgRef.current);
     svgEl.selectAll("*").remove();
+
     const svg = svgEl
+      .call(zoom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    //x and y axis
-    let x = d3.scaleTime().range([0, width]);
-    let y0 = d3.scaleLinear().range([height, 0]);
-    let y1 = d3.scaleLinear().range([height, 0]);
+    // clippath to stop line and x axis spilling over
+    svg
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "clip")
+      .append("rect")
+      .attr("x", 0)
+      .attr("width", width)
+      .attr("height", height);
 
-    x.domain(
-      d3.extent(data, (d) => {
-        return d.time;
-      })
-    );
-    y0.domain([
-      0,
-      d3.max(data, (d) => {
-        return d.eload;
-      }),
-    ]);
-    y1.domain([
-      0,
-      d3.max(data, (d) => {
-        return d.temp;
-      }),
-    ]);
-
-    //x axis
+    // call x-axis and apply the clip from the defs
     svg
       .append("g")
-      .attr("transform", `translate(0, ${height})`)
-      .call(d3.axisBottom(x));
+      .attr("class", "x-axis")
+      .attr("clip-path", "url(#clip)") 
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(xScale0));
 
-    //y0 axis
-    svg.append("g").call(d3.axisLeft(y0));
+    // call y0 axis
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(yScale0));
 
-    //y1 axis
+    //call y1 axis
     svg
       .append("g")
-      .attr("class", "axisRed")
       .attr("transform", "translate( " + width + ", 0 )")
-      .call(d3.axisRight(y1))
-
-    //x axis title
-    svg
-      .append("text")
-      .attr("text-anchor", "end")
-      .attr("x", width - 375)
-      .attr("y", height + margin.top + 0)
-      .text("Date");
-
-    //y0 axis title
-    svg.append("text")
-      .attr("text-anchor", "end")
-      .attr("transform", "rotate(-90)")
-      .attr("y", -margin.left + 10)
-      .attr("x", -margin.top - 85)
-      .text("Energy Load [kWh]")
-
-    svg.append("text")
-      .attr("text-anchor", "end")
-      .attr("transform", "rotate(-90)")
-      .attr("y", -margin.right + 910)
-      .attr("x", -margin.top - 100)
-      .text("Temperature")
-
-
-    //  first line (eload)
-    let valueLine = d3
-      .line()
-      .x((d) => {
-        return x(d.time);
-      })
-      .y((d) => {
-        return y0(d.eload);
-      });
-
-    // second line (temp)
-    let valueLine2 = d3
-      .line()
-      .x((d) => {
-        return x(d.time);
-      })
-      .y((d) => {
-        return y1(d.temp);
-      });
+      .call(d3.axisRight(yScale1))
 
     let keys = ["Eload", "Temperature"];
 
@@ -114,29 +135,32 @@ const PeriodChart = ({ data }) => {
       .domain(keys)
       .range(["#0C6291", "#a63446"]);
 
+    // Append the path, bind the data, and call the line generator
     svg
       .append("path")
-      .data([data])
-      .attr("class", "line")
+      .datum(data) 
+      .attr("class", "line0") 
       .attr("fill", "none")
       .attr("stroke", function (d) {
         return color(d);
       })
       .attr("stroke-width", 1.5)
-      .attr("d", valueLine);
+      .attr("clip-path", "url(#clip)")
+      .attr("d", line0); 
 
     svg
       .append("path")
-      .data([data])
-      .attr("class", "line")
+      .datum(data) 
+      .attr("class", "line1") 
       .attr("fill", "none")
       .attr("stroke", function (d) {
         return color(d[1]);
       })
       .attr("stroke-width", 1.5)
-      .attr("d", valueLine2);
+      .attr("clip-path", "url(#clip)")
+      .attr("d", line1); 
 
-    //dots
+    //legend dots
     svg
       .selectAll("dots")
       .data(keys)
@@ -151,7 +175,7 @@ const PeriodChart = ({ data }) => {
         return color(d);
       });
 
-    //labels
+    //legend labels
     svg
       .selectAll("labels")
       .data(keys)
@@ -169,7 +193,6 @@ const PeriodChart = ({ data }) => {
       })
       .attr("text-anchor", "left")
       .style("alignment-baseline", "middle");
-
   }, [data]);
 
   return <svg ref={svgRef} width={svgWidth} height={svgHeight} />;

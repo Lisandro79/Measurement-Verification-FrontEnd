@@ -14,6 +14,10 @@ const Model = (props) => {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
 
@@ -44,12 +48,11 @@ const Model = (props) => {
       return;
     }
     const parseData = async () => {
-      let baseline = await parseBaseline(modelData);
-      let reporting = await parseReporting(modelData);
-      let counterfactual = await parseCounterfactual(modelData);
+
+      let baseline = await parseBaseline(modelData)
+      let reporting = await parseReporting(modelData)
 
       let chartData = baseline.concat(reporting);
-      chartData = chartData.concat(counterfactual);
 
       setIsLoading(false);
       setChartData(chartData);
@@ -59,10 +62,7 @@ const Model = (props) => {
     parseData();
   }, [modelData]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
-
+  
   const parseBaseline = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
@@ -70,13 +70,14 @@ const Model = (props) => {
     data.baseline_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
-        condition: "baseline",
-        eload: +data.baseline_eload[index],
-      };
-      result.push(aux);
-    });
-    return result;
-  };
+        baseline_eload: +data.baseline_eload[index],
+        reporting_eload: 0,
+        reporting_counterfactual_usage: 0
+      }
+      result.push(aux)
+    })
+    return result
+  }
 
   const parseReporting = async (data) => {
     let result = [];
@@ -85,28 +86,14 @@ const Model = (props) => {
     data.reporting_datetime.forEach((date, index) => {
       let aux = {
         datetime: parseTime(date),
-        condition: "reporting",
-        eload: +data.reporting_eload[index],
-      };
-      result.push(aux);
-    });
-    return result;
-  };
-
-  const parseCounterfactual = async (data) => {
-    let result = [];
-    let parseTime = d3.timeParse("%m/%d/%y %H:%M");
-
-    data.reporting_datetime.forEach((date, index) => {
-      let aux = {
-        datetime: parseTime(date),
-        condition: "counterfactual",
-        eload: +data.reporting_counterfactual_usage[index],
-      };
-      result.push(aux);
-    });
-    return result;
-  };
+        baseline_eload: 0,
+        reporting_eload: +data.reporting_eload[index],
+        reporting_counterfactual_usage: +data.reporting_counterfactual_usage[index]
+      }
+      result.push(aux)
+    })
+    return result
+  }
 
   return (
     <div className="model-chart">

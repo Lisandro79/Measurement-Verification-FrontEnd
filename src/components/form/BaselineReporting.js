@@ -139,8 +139,8 @@ function BaselineReporting(props) {
     foundAllDates
       ? setPlotErrorMsg(null)
       : setPlotErrorMsg(
-          "There is an error in the dates, please check them and try again"
-        );
+        "There is an error in the dates, please check them and try again"
+      );
 
     return foundAllDates;
   };
@@ -346,13 +346,6 @@ function BaselineReporting(props) {
           sx={{ my: 2 }}
           variant="contained"
           disabled={fieldsCompleted ? false : true}
-          onClick={onClickModel}
-        >
-          Model
-        </Button>
-        <Button
-          sx={{ my: 2 }}
-          variant="contained"
           onClick={onClickModel}
         >
           Model

@@ -3,8 +3,7 @@ import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import Button from "@mui/material/Button";
-import template_data from "./template_data.json"
-import template_response from "./template_response.json"
+import templateData from "./template_data.json"
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -21,21 +20,18 @@ const Model = (props) => {
     const fetchData = async () => {
       setIsLoading(true);
 
-      //HARDCODED
-      //let response = await model(template_data)
+      //TEMPLATE DATA
+      //let response = await model(templateData)
 
       //APP FORM
-      //let response = await model(props.projectData);
+      let response = await model(props.projectData);
 
-      // if (response.data === undefined) {
-      //   setErrorMsg("There was an error, please try again");
-      //   setIsLoading(false);
-      // }
+      if (response.data === undefined) {
+        setErrorMsg("There was an error, please try again");
+        setIsLoading(false);
+      }
 
-      //setModelData(response.data);
-
-      //WITHOUT BACKEND
-      setModelData(template_response)
+      setModelData(response.data);
 
       return;
     };
@@ -62,7 +58,7 @@ const Model = (props) => {
     parseData();
   }, [modelData]);
 
-  
+
   const parseBaseline = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");

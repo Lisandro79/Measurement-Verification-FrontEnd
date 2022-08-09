@@ -3,7 +3,6 @@ import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import Button from "@mui/material/Button";
-import templateData from "./template_data.json"
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -20,10 +19,6 @@ const Model = (props) => {
     const fetchData = async () => {
       setIsLoading(true);
 
-      //TEMPLATE DATA
-      //let response = await model(templateData)
-
-      //APP FORM
       let response = await model(props.projectData);
 
       if (response.data === undefined) {

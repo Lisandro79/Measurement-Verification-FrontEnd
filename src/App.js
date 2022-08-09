@@ -98,7 +98,7 @@ const App = () => {
         <Navbar></Navbar>
         <div className="tab-selector">
           <h4 className={formStep === 1 ? "active-form" : null}>
-            Project infoa
+            Project info
           </h4>
           <h4 className={formStep === 2 ? "active-form" : null}>
             Baseline & reporting

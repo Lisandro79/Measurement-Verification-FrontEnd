@@ -1,8 +1,8 @@
 import client from "./axios";
 
-export const model = (data) =>
+export const model = async (data) =>
   client
-    .post("/home", data, {
+    .post("/model", data, {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",

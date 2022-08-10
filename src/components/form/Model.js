@@ -3,6 +3,8 @@ import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import Button from "@mui/material/Button";
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -92,6 +94,13 @@ const Model = (props) => {
       <div className="item">
         {isLoading ? (
           <h4>Fitting model in progress...</h4>
+        ) : (
+          <h4>{errorMsg}</h4>
+        )}
+        {isLoading ? (
+          <Box sx={{ display: 'flex' }}>
+            <CircularProgress />
+          </Box>
         ) : (
           <h4>{errorMsg}</h4>
         )}

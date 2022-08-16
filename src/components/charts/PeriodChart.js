@@ -20,7 +20,7 @@ const PeriodChart = ({ data }) => {
       .on("zoom", (event) => {
         xScale0
           .domain(event.transform.rescaleX(xScale1).domain())
-          .range([0, width].map((d) => event.transform.applyX(d))); 
+          .range([0, width].map((d) => event.transform.applyX(d)));
 
         svg.select(".line0").attr("d", line0);
         svg.select(".line1").attr("d", line1);
@@ -114,7 +114,7 @@ const PeriodChart = ({ data }) => {
     svg
       .append("g")
       .attr("class", "x-axis")
-      .attr("clip-path", "url(#clip)") 
+      .attr("clip-path", "url(#clip)")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(xScale0));
 
@@ -138,27 +138,27 @@ const PeriodChart = ({ data }) => {
     // Append the path, bind the data, and call the line generator
     svg
       .append("path")
-      .datum(data) 
-      .attr("class", "line0") 
+      .datum(data)
+      .attr("class", "line0")
       .attr("fill", "none")
       .attr("stroke", function (d) {
         return color(d);
       })
       .attr("stroke-width", 1.5)
       .attr("clip-path", "url(#clip)")
-      .attr("d", line0); 
+      .attr("d", line0);
 
     svg
       .append("path")
-      .datum(data) 
-      .attr("class", "line1") 
+      .datum(data)
+      .attr("class", "line1")
       .attr("fill", "none")
       .attr("stroke", function (d) {
         return color(d[1]);
       })
       .attr("stroke-width", 1.5)
       .attr("clip-path", "url(#clip)")
-      .attr("d", line1); 
+      .attr("d", line1);
 
     //legend dots
     svg

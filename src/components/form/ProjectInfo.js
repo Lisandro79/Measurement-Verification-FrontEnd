@@ -5,7 +5,7 @@ import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 
 function ProjectInfo(props) {
-  
+
   const [fieldsCompleted, setFieldsCompleted] = useState(false);
 
   useEffect(() => {
@@ -144,13 +144,6 @@ function ProjectInfo(props) {
           sx={{ my: 2 }}
           variant="contained"
           disabled={fieldsCompleted ? false : true}
-          onClick={props.nextFormStep}
-        >
-          Next
-        </Button>
-        <Button
-          sx={{ my: 2 }}
-          variant="contained"
           onClick={props.nextFormStep}
         >
           Next

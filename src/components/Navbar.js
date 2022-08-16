@@ -4,7 +4,7 @@ import "../assets/Navbar.css";
 function Navbar() {
   return (
     <div className="navbar">
-      <p>Measurement & Verification Calculator</p>
+      <p>Newton Meter - Measurement & Verification tool</p>
     </div>
   );
 }

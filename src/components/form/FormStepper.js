@@ -32,7 +32,6 @@ export default function FormStepper() {
         {steps.map((label, index) => {
           const stepProps = {};
           const labelProps = {};
-
           return (
             <Step key={label} {...stepProps}>
               <StepLabel {...labelProps}>{label}</StepLabel>

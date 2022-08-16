@@ -3,8 +3,8 @@ import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import Button from "@mui/material/Button";
-import template_data from "./template_data.json"
-import template_response from "./template_response.json"
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 const Model = (props) => {
   const isFirstRender = useRef(true);
@@ -21,21 +21,14 @@ const Model = (props) => {
     const fetchData = async () => {
       setIsLoading(true);
 
-      //HARDCODED
-      //let response = await model(template_data)
+      let response = await model(props.projectData);
 
-      //APP FORM
-      //let response = await model(props.projectData);
+      if (response.data === undefined) {
+        setErrorMsg("There was an error, please try again");
+        setIsLoading(false);
+      }
 
-      // if (response.data === undefined) {
-      //   setErrorMsg("There was an error, please try again");
-      //   setIsLoading(false);
-      // }
-
-      //setModelData(response.data);
-
-      //WITHOUT BACKEND
-      setModelData(template_response)
+      setModelData(response.data);
 
       return;
     };
@@ -62,7 +55,7 @@ const Model = (props) => {
     parseData();
   }, [modelData]);
 
-  
+
   const parseBaseline = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
@@ -101,6 +94,13 @@ const Model = (props) => {
       <div className="item">
         {isLoading ? (
           <h4>Fitting model in progress...</h4>
+        ) : (
+          <h4>{errorMsg}</h4>
+        )}
+        {isLoading ? (
+          <Box sx={{ display: 'flex' }}>
+            <CircularProgress />
+          </Box>
         ) : (
           <h4>{errorMsg}</h4>
         )}

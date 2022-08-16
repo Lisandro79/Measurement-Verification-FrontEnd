@@ -12,6 +12,7 @@ const csv = require("jquery-csv");
 function BaselineReporting(props) {
   const [inputCsv, setInputCsv] = useState(null);
   const [fieldsCompleted, setFieldsCompleted] = useState(false);
+  const [canModel, setCanModel] = useState(false);
   const [plotErrorMsg, setPlotErrorMsg] = useState(null);
   const [modelErrorMsg, setModelErrorMsg] = useState(null);
   const [parsedData, setParsedData] = useState({});
@@ -60,6 +61,7 @@ function BaselineReporting(props) {
         });
 
         setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
+        setCanModel(true)
       }
       return;
     };
@@ -139,8 +141,8 @@ function BaselineReporting(props) {
     foundAllDates
       ? setPlotErrorMsg(null)
       : setPlotErrorMsg(
-          "There is an error in the dates, please check them and try again"
-        );
+        "There is an error in the dates, please check them and try again"
+      );
 
     return foundAllDates;
   };
@@ -313,7 +315,7 @@ function BaselineReporting(props) {
           disabled={fieldsCompleted ? false : true}
           onClick={createChart}
         >
-          Plot
+          Check data
         </Button>
       </div>
 
@@ -345,14 +347,7 @@ function BaselineReporting(props) {
         <Button
           sx={{ my: 2 }}
           variant="contained"
-          disabled={fieldsCompleted ? false : true}
-          onClick={onClickModel}
-        >
-          Model
-        </Button>
-        <Button
-          sx={{ my: 2 }}
-          variant="contained"
+          disabled={canModel ? false : true}
           onClick={onClickModel}
         >
           Model

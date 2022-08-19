@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
-import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
+import { arrayToCsv, arrStringToNum } from "../../utils/utils";
 import { validateData } from "./validations/DataValidations";
-import { validateDates } from "./validations/DateValidations";
+import { validateDates, datesInCsv } from "./validations/DateValidations";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
@@ -40,7 +40,8 @@ function BaselineReporting(props) {
       if (Object.keys(splittedData).length === 2) {
         let baseline = await arrayToCsv(splittedData.baseline);
         let reporting = await arrayToCsv(splittedData.reporting);
-        reporting = "time,eload,temp\n" + reporting;
+        baseline = "time,eload,temp\n" + baseline;
+        reporting = "time,eload,temp\n" + reporting;     
 
         setFormattedData((current) => ({ ...current, baseline: baseline }));
         setFormattedData((current) => ({ ...current, reporting: reporting }));
@@ -86,9 +87,9 @@ function BaselineReporting(props) {
     reader.readAsBinaryString(e.target.files[0]);
   };
 
-  const validateFile = async (inputCsv) => { 
-    
-    let validation = await validateData(inputCsv) && await validateDates(inputCsv)
+  const validateFile = async (inputCsv) => {
+    let validation =
+      (await validateData(inputCsv)) && (await validateDates(inputCsv));
 
     if (!validation) {
       setDataValidationMsg("There is an error in the file");
@@ -105,46 +106,24 @@ function BaselineReporting(props) {
     splitData();
   };
 
-  const validateDateRanges = () => {
+  const validateDateRanges = async () => {
     let dates = [];
 
-    for (let date in props.projectData.dates) {
-      //date = formatDate(props.projectData.dates[date]);
-      date = new Date(props.projectData.dates[date]);
-      dates.push(date);
+    Object.keys(props.projectData.dates).forEach((key) => {
+      dates.push(props.projectData.dates[key]);
+    });
+
+    if (!datesInCsv(dates, inputCsv)) {
+      setPlotErrorMsg(
+        "There is an error in the dates, please check them and try again"
+      ); //timer
+      return false;
     }
 
-    if (datesInCsv(dates) && checkDatesRanges()) {
-      return true;
-    }
-    return false;
+    return await checkDatesRanges();
   };
 
-  const datesInCsv = (dates) => {
-    const data = csv.toArrays(inputCsv);
-
-    let foundAllDates = true;
-    let idx = 0;
-
-    while (foundAllDates && idx < dates.length) {
-      const dateToFind = new Date(dates[idx]);
-      const found = data.find(
-        (element) => new Date(element[0]).getTime() === dateToFind.getTime()
-      );
-      foundAllDates = found;
-      idx++;
-    }
-
-    foundAllDates
-      ? setPlotErrorMsg(null)
-      : setPlotErrorMsg(
-          "There is an error in the dates, please check them and try again"
-        );
-
-    return foundAllDates;
-  };
-
-  const checkDatesRanges = () => {
+  const checkDatesRanges = async () => {
     if (
       props.projectData.dates.start_baseline >=
       props.projectData.dates.end_baseline
@@ -177,21 +156,21 @@ function BaselineReporting(props) {
   const splitData = () => {
     const data = csv.toArrays(inputCsv);
 
-    // const startReportingDate = formatDate(
-    //   props.projectData.dates.start_reporting
-    // );
-
     const startReportingDate = new Date(
       props.projectData.dates.start_reporting
     );
 
-    const limit = data.find((element) => {
-      new Date(element[0]).getTime() === startReportingDate.getTime();
-    });
+    const limit = data
+    .slice(1)
+    .find(
+      (element) => new Date(element[0]).getTime() == startReportingDate.getTime()
+    );
 
     let indexToSplit = data.indexOf(limit);
     let baseline = data.slice(0, indexToSplit);
     let reporting = data.slice(indexToSplit + 1);
+
+    baseline.shift()
 
     setSplittedData((current) => ({ ...current, baseline: baseline }));
     setSplittedData((current) => ({ ...current, reporting: reporting }));

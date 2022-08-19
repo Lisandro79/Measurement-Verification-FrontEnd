@@ -18,3 +18,24 @@ const validateDateFormat = (date) => {
 
   return date.match(regex);
 };
+
+export async function datesInCsv(dates, csv) {
+  const data = csvParser.toArrays(csv);
+
+  let foundAllDates = true;
+  let idx = 0;
+
+  while (foundAllDates && idx < dates.length) {
+    const dateToFind = new Date(dates[idx]);
+
+    const found = data
+      .slice(1)
+      .find(
+        (element) => new Date(element[0]).getTime() === dateToFind.getTime()
+      );
+    if (!found) foundAllDates = false;
+    idx++;
+  }
+
+  return foundAllDates;
+}

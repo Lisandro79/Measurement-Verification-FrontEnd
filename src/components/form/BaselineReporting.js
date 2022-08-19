@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import { arrayToCsv, formatDate, arrStringToNum } from "../../utils/utils";
+import { validateData } from "./validations/DataValidations";
+import { validateDates } from "./validations/DateValidations";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
@@ -19,6 +21,7 @@ function BaselineReporting(props) {
   const [splittedData, setSplittedData] = useState({});
   const [formattedData, setFormattedData] = useState({});
   const [fileName, setFileName] = useState(null);
+  const [dataValidationMsg, setDataValidationMsg] = useState(null);
 
   useEffect(() => {
     if (
@@ -61,7 +64,7 @@ function BaselineReporting(props) {
         });
 
         setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
-        setCanModel(true)
+        setCanModel(true);
       }
       return;
     };
@@ -83,42 +86,31 @@ function BaselineReporting(props) {
     reader.readAsBinaryString(e.target.files[0]);
   };
 
-  const validateFile = (inputCsv) => {
-    //TO DO: validate data of csv file
+  const validateFile = async (inputCsv) => { 
+    
+    let validation = await validateData(inputCsv) && await validateDates(inputCsv)
+
+    if (!validation) {
+      setDataValidationMsg("There is an error in the file");
+      return;
+    }
+    setDataValidationMsg(null); //set timer
     setInputCsv(inputCsv);
   };
 
-  const createChart = () => {
-    if (!validateDates()) {
+  const checkData = () => {
+    if (!validateDateRanges()) {
       return;
     }
     splitData();
   };
 
-  const splitData = () => {
-    const data = csv.toArrays(inputCsv);
-
-    const startReportingDate = formatDate(
-      props.projectData.dates.start_reporting
-    );
-
-    const limit = data.find((element) => element[0] === startReportingDate);
-
-    let indexToSplit = data.indexOf(limit);
-    let baseline = data.slice(0, indexToSplit);
-    let reporting = data.slice(indexToSplit + 1);
-
-    //convert to int
-
-    setSplittedData((current) => ({ ...current, baseline: baseline }));
-    setSplittedData((current) => ({ ...current, reporting: reporting }));
-  };
-
-  const validateDates = () => {
+  const validateDateRanges = () => {
     let dates = [];
 
     for (let date in props.projectData.dates) {
-      date = formatDate(props.projectData.dates[date]);
+      //date = formatDate(props.projectData.dates[date]);
+      date = new Date(props.projectData.dates[date]);
       dates.push(date);
     }
 
@@ -130,10 +122,15 @@ function BaselineReporting(props) {
 
   const datesInCsv = (dates) => {
     const data = csv.toArrays(inputCsv);
+
     let foundAllDates = true;
     let idx = 0;
+
     while (foundAllDates && idx < dates.length) {
-      const found = data.find((element) => element[0] === dates[idx]);
+      const dateToFind = new Date(dates[idx]);
+      const found = data.find(
+        (element) => new Date(element[0]).getTime() === dateToFind.getTime()
+      );
       foundAllDates = found;
       idx++;
     }
@@ -141,8 +138,8 @@ function BaselineReporting(props) {
     foundAllDates
       ? setPlotErrorMsg(null)
       : setPlotErrorMsg(
-        "There is an error in the dates, please check them and try again"
-      );
+          "There is an error in the dates, please check them and try again"
+        );
 
     return foundAllDates;
   };
@@ -175,6 +172,29 @@ function BaselineReporting(props) {
     }
     setPlotErrorMsg(null);
     return true;
+  };
+
+  const splitData = () => {
+    const data = csv.toArrays(inputCsv);
+
+    // const startReportingDate = formatDate(
+    //   props.projectData.dates.start_reporting
+    // );
+
+    const startReportingDate = new Date(
+      props.projectData.dates.start_reporting
+    );
+
+    const limit = data.find((element) => {
+      new Date(element[0]).getTime() === startReportingDate.getTime();
+    });
+
+    let indexToSplit = data.indexOf(limit);
+    let baseline = data.slice(0, indexToSplit);
+    let reporting = data.slice(indexToSplit + 1);
+
+    setSplittedData((current) => ({ ...current, baseline: baseline }));
+    setSplittedData((current) => ({ ...current, reporting: reporting }));
   };
 
   const onClickModel = async () => {
@@ -235,6 +255,11 @@ function BaselineReporting(props) {
           <input hidden accept=".csv" type="file" />
         </Button>
         <i>{fileName ? `Uploaded file: ${fileName}` : null}</i>
+        {dataValidationMsg ? (
+          <div>
+            <Alert severity="warning">{dataValidationMsg}</Alert>
+          </div>
+        ) : null}
       </div>
       <div className="item">
         <h3>Dates</h3>
@@ -313,7 +338,7 @@ function BaselineReporting(props) {
           sx={{ my: 2 }}
           variant="contained"
           disabled={fieldsCompleted ? false : true}
-          onClick={createChart}
+          onClick={checkData}
         >
           Check data
         </Button>

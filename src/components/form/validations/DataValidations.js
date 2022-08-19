@@ -1,15 +1,19 @@
 const csvParser = require("jquery-csv");
 
 export async function validateData(csv) {
-  return (
-    (await checkColumnNames(csv)) &&
-    (await checkTypes(csv)) &&
-    (await checkColumnsLength(csv))
+  const data = csvParser.toArrays(csv);
+  // return (
+  //   (await checkColumnNames(data)) &&
+  //   (await checkTypes(data)) &&
+  //   (await checkColumnsLength(data))
+  // );
+  return (  
+    (await checkTypes(data)) &&
+    (await checkColumnsLength(data))
   );
 }
 
-const checkColumnNames = async (csv) => {
-  const data = csvParser.toArrays(csv);
+const checkColumnNames = async (data) => {
   return (
     data[0][0].toLowerCase() === "time" &&
     data[0][1].toLowerCase() === "eload" &&
@@ -17,8 +21,7 @@ const checkColumnNames = async (csv) => {
   );
 };
 
-const checkTypes = async (csv) => {
-  const data = csvParser.toArrays(csv);
+const checkTypes = async (data) => {
 
   return checkTimeColumn(data) && checkFloatColumns(data);
 };
@@ -31,7 +34,7 @@ const checkTimeColumn = async (data) => {
     parsedDates.push(date);
   });
 
-  return !parsedDates.some(isNaN); //returns if every date is valid
+  return !parsedDates.some(isNaN) //returns if every date is valid
 };
 
 const checkFloatColumns = async (data) => {
@@ -46,8 +49,7 @@ const checkFloatColumns = async (data) => {
   return !parsedEload.some(isNaN) && !parsedTemp.some(isNaN);
 };
 
-const checkColumnsLength = async (csv) => {
-  const data = csvParser.toArrays(csv);
+const checkColumnsLength = async (data) => {
 
   let time = [];
   let eload = [];

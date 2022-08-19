@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
+import Warning from "./Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
 import { validateData } from "./validations/DataValidations";
 import { validateDates, datesInCsv } from "./validations/DateValidations";
@@ -7,7 +8,6 @@ import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import Alert from "@mui/material/Alert";
 
 const csv = require("jquery-csv");
 
@@ -41,7 +41,7 @@ function BaselineReporting(props) {
         let baseline = await arrayToCsv(splittedData.baseline);
         let reporting = await arrayToCsv(splittedData.reporting);
         baseline = "time,eload,temp\n" + baseline;
-        reporting = "time,eload,temp\n" + reporting;     
+        reporting = "time,eload,temp\n" + reporting;
 
         setFormattedData((current) => ({ ...current, baseline: baseline }));
         setFormattedData((current) => ({ ...current, reporting: reporting }));
@@ -92,15 +92,17 @@ function BaselineReporting(props) {
       (await validateData(inputCsv)) && (await validateDates(inputCsv));
 
     if (!validation) {
-      setDataValidationMsg("There is an error in the file");
+      setDataValidationMsg("There is an error in the content of the file, please check it")
+      setTimeout(() => {
+        setDataValidationMsg(null)
+      }, 15000)
       return;
     }
-    setDataValidationMsg(null); //set timer
     setInputCsv(inputCsv);
   };
 
-  const checkData = () => {
-    if (!validateDateRanges()) {
+  const checkData = async () => {
+    if (!await validateDateRanges()) {
       return;
     }
     splitData();
@@ -113,10 +115,13 @@ function BaselineReporting(props) {
       dates.push(props.projectData.dates[key]);
     });
 
-    if (!datesInCsv(dates, inputCsv)) {
+    if (!await datesInCsv(dates, inputCsv)) {
       setPlotErrorMsg(
         "There is an error in the dates, please check them and try again"
-      ); //timer
+      )
+      setTimeout(() => {
+        setPlotErrorMsg(null)
+      }, 15000)
       return false;
     }
 
@@ -130,7 +135,10 @@ function BaselineReporting(props) {
     ) {
       setPlotErrorMsg(
         "Start baseline date has to be prior to end baseline date"
-      );
+      )
+      setTimeout(() => {
+        setPlotErrorMsg(null)
+      }, 15000)
       return false;
     }
     if (
@@ -139,17 +147,22 @@ function BaselineReporting(props) {
     ) {
       setPlotErrorMsg(
         "Start reporting date has to be prior to end reporting date"
-      );
+      )
+      setTimeout(() => {
+        setPlotErrorMsg(null)
+      }, 15000)
       return false;
     }
     if (
       props.projectData.dates.end_baseline >=
       props.projectData.dates.start_reporting
     ) {
-      setPlotErrorMsg("End baseline date has to be after start reporting date");
+      setPlotErrorMsg("End baseline date has to be after start reporting date")
+      setTimeout(() => {
+        setPlotErrorMsg(null)
+      }, 15000)
       return false;
     }
-    setPlotErrorMsg(null);
     return true;
   };
 
@@ -161,10 +174,10 @@ function BaselineReporting(props) {
     );
 
     const limit = data
-    .slice(1)
-    .find(
-      (element) => new Date(element[0]).getTime() == startReportingDate.getTime()
-    );
+      .slice(1)
+      .find(
+        (element) => new Date(element[0]).getTime() == startReportingDate.getTime()
+      );
 
     let indexToSplit = data.indexOf(limit);
     let baseline = data.slice(0, indexToSplit);
@@ -234,11 +247,9 @@ function BaselineReporting(props) {
           <input hidden accept=".csv" type="file" />
         </Button>
         <i>{fileName ? `Uploaded file: ${fileName}` : null}</i>
-        {dataValidationMsg ? (
-          <div>
-            <Alert severity="warning">{dataValidationMsg}</Alert>
-          </div>
-        ) : null}
+        <div>
+          <Warning message={dataValidationMsg} />
+        </div>
       </div>
       <div className="item">
         <h3>Dates</h3>
@@ -323,7 +334,9 @@ function BaselineReporting(props) {
         </Button>
       </div>
 
-      {plotErrorMsg ? <Alert severity="warning">{plotErrorMsg}</Alert> : null}
+      <div>
+        <Warning message={plotErrorMsg} />
+      </div>
 
       <div className="item">
         <h3>Baseline period</h3>
@@ -341,7 +354,10 @@ function BaselineReporting(props) {
         ) : null}
       </div>
 
-      {modelErrorMsg ? <Alert severity="warning">{modelErrorMsg}</Alert> : null}
+      <div>
+        <Warning message={modelErrorMsg} />
+      </div>
+
 
       <div className="item prev-back">
         <Button sx={{ my: 2 }} variant="contained" onClick={props.prevFormStep}>

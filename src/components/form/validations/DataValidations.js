@@ -57,16 +57,19 @@ const validateContent = async (data) => {
   let eload = [];
   let temp = [];
 
-  let validation = {
-    result : true
-  }
+  let validation = {}
 
-  let idx = 1
+  data.slice(1).forEach((row, idx) => {
+    if(!validateRowLength(row) || !validateDataTypes(row)){
+      validation.result = false
+      validation.message = `There is an error in row ${idx}, please check it and try again`
+      return validation
+    }
+  })
 
-  while(validation.result && idx < data.length){
-    console.log(data[idx]);
-    idx++
-  }
+  validation.result = true
+  return 
+
 }
 
 

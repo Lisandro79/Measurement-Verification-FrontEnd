@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import Warning from "./Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
-import { validateData } from "./validations/DataValidations";
+import { validateData } from "./validations/DataValidator";
 import { validateDates, datesInCsv } from "./validations/DateValidations";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";

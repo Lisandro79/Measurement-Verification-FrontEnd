@@ -88,6 +88,8 @@ function BaselineReporting(props) {
   };
 
   const validateFile = async (inputCsv) => {
+    validateData(inputCsv)
+
     let validation =
       (await validateData(inputCsv)) && (await validateDates(inputCsv));
 

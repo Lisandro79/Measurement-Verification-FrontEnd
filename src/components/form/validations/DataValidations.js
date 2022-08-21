@@ -7,13 +7,40 @@ export async function validateData(csv) {
   //   (await checkTypes(data)) &&
   //   (await checkColumnsLength(data))
   // );
-  return (  
-    (await checkTypes(data)) &&
-    (await checkColumnsLength(data))
-  );
+  // return (
+  //   (await checkColumnNames(data)) &&
+  //   (await checkColumnsLength(data))
+  // );
+  validateContent(data)
+  //checkContent(data)
 }
 
-const checkColumnNames = async (data) => {
+const validateColumns = async (data) => {
+  const validation = {}
+
+  if (!validateColumnNames(data)){
+    validation.result = false
+    validation.message = "Please check the column names and try again"
+    return validation
+  }
+
+  if (!validateThreeColumns(data)){
+    validation.result = false
+    validation.message = "The csv has to have three columns"
+    return validation
+  }
+
+  if (!validateColumnsLength(data)){ //could be in single foreach
+    validation.result = false
+    validation.message = "The csv has to have three columns"
+    return validation
+  }
+
+  validation.result = true
+  return validation
+}
+
+const validateColumnNames = async (data) => {
   return (
     data[0][0].toLowerCase() === "time" &&
     data[0][1].toLowerCase() === "eload" &&
@@ -21,10 +48,50 @@ const checkColumnNames = async (data) => {
   );
 };
 
-const checkTypes = async (data) => {
+const validateThreeColumns = async (data) => {
+  return data[0].length === 3
+}
 
-  return checkTimeColumn(data) && checkFloatColumns(data);
+const validateContent = async (data) => {
+  let time = [];
+  let eload = [];
+  let temp = [];
+
+  let validation = {
+    result : true
+  }
+
+  let idx = 1
+
+  while(validation.result && idx < data.length){
+    console.log(data[idx]);
+    idx++
+  }
+}
+
+
+
+const validateColumnsLength = async (data) => {
+  let time = [];
+  let eload = [];
+  let temp = [];
+
+  data.slice(1).forEach((element) => {
+    time.push(element[0]);
+    eload.push(element[1]);
+    temp.push(element[2]);
+  });
+
+  return time.length === eload.length && time.length === temp.length;
 };
+
+const checkContent = async (data) => {
+  console.log(data.length);
+}
+
+// const checkTypes = async (data) => {
+//   return checkTimeColumn(data) && checkFloatColumns(data);
+// };
 
 const checkTimeColumn = async (data) => {
   let parsedDates = [];
@@ -34,7 +101,7 @@ const checkTimeColumn = async (data) => {
     parsedDates.push(date);
   });
 
-  return !parsedDates.some(isNaN) //returns if every date is valid
+  return !parsedDates.some(isNaN);
 };
 
 const checkFloatColumns = async (data) => {
@@ -49,17 +116,4 @@ const checkFloatColumns = async (data) => {
   return !parsedEload.some(isNaN) && !parsedTemp.some(isNaN);
 };
 
-const checkColumnsLength = async (data) => {
 
-  let time = [];
-  let eload = [];
-  let temp = [];
-
-  data.slice(1).forEach((element) => {
-    time.push(element[0]);
-    eload.push(element[1]);
-    temp.push(element[2]);
-  });
-
-  return time.length === eload.length && time.length === temp.length;
-};

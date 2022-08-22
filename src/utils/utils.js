@@ -1,4 +1,4 @@
-export const arrayToCsv = (array) => {
+export const arrayToCsv = async (array) => {
     var csv = array
       .map(function (d) {
         return d.join();

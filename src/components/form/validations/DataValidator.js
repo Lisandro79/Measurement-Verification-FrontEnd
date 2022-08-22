@@ -1,10 +1,7 @@
-const csvParser = require("jquery-csv");
-
 const THREE_COLUMNS = 3;
 const ROW_GAP = 2
 
-export async function validateData(csv) {
-  const data = csvParser.toArrays(csv);
+export async function validateData(data) {
 
   let validation = await validateColumns(data);
   if (validation.result) validation = await validateContent(data);
@@ -55,7 +52,7 @@ const validateContent = async (data) => {
     }
   }
 
-  if (!(await validateDates(dates))) {
+  if (!(await validateDateColumn(dates))) {
     validation.result = false;
     validation.message = `Date format must be 'M/D/Y H:M'`;
     return validation;
@@ -77,7 +74,7 @@ const validateDataTypes = async (row) => {
   return !isNaN(parsedDate) && !isNaN(parsedTime) && !isNaN(parsedEload);
 };
 
-const validateDates = async (dates) => {
+const validateDateColumn = async (dates) => {
   return dates.every(validateDateFormat);
 };
 
@@ -88,23 +85,65 @@ const validateDateFormat = async (date) => {
   return date.match(regex);
 };
 
-export async function datesInCsv(dates, csv) {
-  const data = csvParser.toArrays(csv);
+export async function validateDates(dates, data) {
 
-  let foundAllDates = true;
-  let idx = 0;
+  let validation = await validateDateRanges(dates)
+  if (validation.result) validation = await areDatesInData(dates, data)
 
-  while (foundAllDates && idx < dates.length) {
-    const dateToFind = new Date(dates[idx]);
+  return validation
+}
+
+const validateDateRanges = async (dates) => {
+
+  let validation = {}
+
+  Object.keys(dates).forEach((key) => {
+    let parsedDate = new Date(dates[key])
+    dates[key] = parsedDate
+  });
+
+  if (dates.start_baseline >= dates.end_baseline) {
+    validation.message = "Start baseline date has to be previous to end baseline date"
+    validation.result = false
+    return validation;
+  }
+  if (dates.start_reporting >= dates.end_reporting) {
+    validation.message = "Start reporting date has to be previous to end reporting date"
+    validation.result = false
+    return validation;
+  }
+  if (dates.end_baseline >= dates.start_reporting) {
+    validation.message = "End baseline date has to be after start reporting date"
+    validation.result = false
+    return validation;
+  }
+
+  validation.result = true
+  return validation;
+};
+
+const areDatesInData = async (dates, data) => {
+
+  let validation = {}
+
+  console.log(dates);
+
+  for (let key in dates) {
 
     const found = data
       .slice(1)
       .find(
-        (element) => new Date(element[0]).getTime() === dateToFind.getTime()
-      );
-    if (!found) foundAllDates = false;
-    idx++;
-  }
+        (row) => new Date(row[0]).getTime() === dates[key].getTime()
+      )
 
-  return foundAllDates;
+    if (!found) {
+      validation.message = "The provided dates are not in the csv, please check them and try again"
+      validation.result = false
+      return validation
+    }
+  }
+  validation.result = true
+  return validation
 }
+
+

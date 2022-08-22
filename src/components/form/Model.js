@@ -21,8 +21,6 @@ const Model = (props) => {
     const fetchData = async () => {
       setIsLoading(true);
 
-      console.log(props.projectData);
-
       let response = await model(props.projectData);
 
       if (response.data === undefined) {

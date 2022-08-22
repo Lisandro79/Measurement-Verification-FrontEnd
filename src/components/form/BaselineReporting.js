@@ -1,31 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PeriodChart from "../charts/PeriodChart";
 import Warning from "./Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
-import { validateData } from "./validations/DataValidator";
+import { validateData, validateDates } from "./validations/DataValidator";
 import { formatDate } from "./validations/DateFormatter";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
-const csv = require("jquery-csv");
+const csvParser = require("jquery-csv");
 
 function BaselineReporting(props) {
-  const [inputCsv, setInputCsv] = useState(null);
+
+  const isFirstRender = useRef(true);
+
+  const [dataCsv, setDataCsv] = useState(null);
+  const [dataMatrix, setDataMatrix] = useState(null)
+
   const [fieldsCompleted, setFieldsCompleted] = useState(false);
   const [canModel, setCanModel] = useState(false);
-  const [plotErrorMsg, setPlotErrorMsg] = useState(null);
-  const [modelErrorMsg, setModelErrorMsg] = useState(null);
+
   const [parsedData, setParsedData] = useState({});
   const [splittedData, setSplittedData] = useState({});
   const [formattedData, setFormattedData] = useState({});
+
   const [fileName, setFileName] = useState(null);
+
   const [dataValidationMsg, setDataValidationMsg] = useState(null);
+  const [plotErrorMsg, setPlotErrorMsg] = useState(null);
+  const [modelErrorMsg, setModelErrorMsg] = useState(null);
 
   useEffect(() => {
     if (
-      inputCsv &&
+      dataCsv &&
       props.projectData.dates.start_baseline &&
       props.projectData.dates.end_baseline &&
       props.projectData.dates.start_reporting &&
@@ -33,7 +41,7 @@ function BaselineReporting(props) {
     ) {
       setFieldsCompleted(true);
     }
-  }, [props.projectData, inputCsv]);
+  }, [props.projectData, dataCsv]);
 
   useEffect(() => {
     const formatData = async () => {
@@ -64,6 +72,8 @@ function BaselineReporting(props) {
           d.temp = +d.temp;
         });
 
+        console.log(formattedData);
+
         setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
         setCanModel(true);
       }
@@ -76,19 +86,38 @@ function BaselineReporting(props) {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleFileChange = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    validateFile()
+
+  }, [dataMatrix])
+
+  const handleFileChange = async (event) => {
+    event.preventDefault();
 
     const reader = new FileReader();
+
     reader.onload = function () {
-      setFileName(e.target.files[0].name);
-      validateFile(reader.result);
+      setFileName(event.target.files[0].name);
+      saveData(reader.result)
     };
-    reader.readAsBinaryString(e.target.files[0]);
+    reader.readAsBinaryString(event.target.files[0]);
   };
 
-  const validateFile = async (inputCsv) => {
-    let validation = await validateData(inputCsv)
+  const saveData = async (dataCsv) => {
+    setDataCsv(dataCsv)
+
+    let dataMatrix = await csvParser.toArrays(dataCsv)
+    setDataMatrix(dataMatrix)
+  }
+
+  const validateFile = async () => {
+
+    let validation = await validateData(dataMatrix)
 
     if (!validation.result) {
       setDataValidationMsg(validation.message)
@@ -97,91 +126,43 @@ function BaselineReporting(props) {
       }, 15000)
       return;
     }
-    formatDate(inputCsv)
-    setInputCsv(inputCsv);
+
+    let parsedDates = await formatDate(dataMatrix)
+    let dataCsv = await arrayToCsv(parsedDates)
+
+    setDataCsv(dataCsv);
   };
 
   const checkData = async () => {
-    if (!await validateDateRanges()) {
-      return;
-    }
-    splitData();
-  };
 
-  const validateDateRanges = async () => {
-    let dates = [];
+    let validation = await validateDates(props.projectData.dates, dataMatrix)
 
-    Object.keys(props.projectData.dates).forEach((key) => {
-      dates.push(props.projectData.dates[key]);
-    });
-
-    if (!await datesInCsv(dates, inputCsv)) {
-      setPlotErrorMsg(
-        "There is an error in the dates, please check them and try again"
-      )
+    if (!validation.result) {
+      setPlotErrorMsg(validation.message)
       setTimeout(() => {
         setPlotErrorMsg(null)
       }, 15000)
-      return false;
+    } else {
+      splitData()
     }
 
-    return await checkDatesRanges();
-  };
-
-  const checkDatesRanges = async () => {
-    if (
-      props.projectData.dates.start_baseline >=
-      props.projectData.dates.end_baseline
-    ) {
-      setPlotErrorMsg(
-        "Start baseline date has to be prior to end baseline date"
-      )
-      setTimeout(() => {
-        setPlotErrorMsg(null)
-      }, 15000)
-      return false;
-    }
-    if (
-      props.projectData.dates.start_reporting >=
-      props.projectData.dates.end_reporting
-    ) {
-      setPlotErrorMsg(
-        "Start reporting date has to be prior to end reporting date"
-      )
-      setTimeout(() => {
-        setPlotErrorMsg(null)
-      }, 15000)
-      return false;
-    }
-    if (
-      props.projectData.dates.end_baseline >=
-      props.projectData.dates.start_reporting
-    ) {
-      setPlotErrorMsg("End baseline date has to be after start reporting date")
-      setTimeout(() => {
-        setPlotErrorMsg(null)
-      }, 15000)
-      return false;
-    }
-    return true;
   };
 
   const splitData = () => {
-    const data = csv.toArrays(inputCsv);
 
     const startReportingDate = new Date(
       props.projectData.dates.start_reporting
     );
 
-    const limit = data
+    const limit = dataMatrix
       .slice(1)
       .find(
         (element) => new Date(element[0]).getTime() == startReportingDate.getTime()
       );
 
-    let indexToSplit = data.indexOf(limit);
-    let baseline = data.slice(0, indexToSplit);
-    let reporting = data.slice(indexToSplit + 1);
+    let indexToSplit = dataMatrix.indexOf(limit);
+    let baseline = dataMatrix.slice(0, indexToSplit);
+    let reporting = dataMatrix.slice(indexToSplit + 1);
 
     baseline.shift()
 

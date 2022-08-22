@@ -1,13 +1,9 @@
-const csvParser = require("jquery-csv");
-
 const MONTH_GAP = 1
 const LAST_TWO_DIGITS = 2
 
-export async function formatDate(csv) {
-    const data = csvParser.toArrays(csv)
+export async function formatDate(data) {
 
     for (const [idx, row] of data.slice(1).entries()) {
-        console.log(idx);
         let parsedDate = await parseDate(row[0])
         data[idx + 1][0] = parsedDate
     }

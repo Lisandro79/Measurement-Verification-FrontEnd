@@ -3,7 +3,7 @@ import PeriodChart from "../charts/PeriodChart";
 import Warning from "./Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
 import { validateData } from "./validations/DataValidator";
-import { validateDates, datesInCsv } from "./validations/DateValidations";
+import { validateDates, datesInCsv } from "./validations/DateFormatter";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
@@ -88,13 +88,10 @@ function BaselineReporting(props) {
   };
 
   const validateFile = async (inputCsv) => {
-    validateData(inputCsv)
+    let validation = await validateData(inputCsv)
 
-    let validation =
-      (await validateData(inputCsv)) && (await validateDates(inputCsv));
-
-    if (!validation) {
-      setDataValidationMsg("There is an error in the content of the file, please check it")
+    if (!validation.result) {
+      setDataValidationMsg(validation.message)
       setTimeout(() => {
         setDataValidationMsg(null)
       }, 15000)

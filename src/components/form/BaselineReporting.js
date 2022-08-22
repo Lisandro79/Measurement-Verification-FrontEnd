@@ -3,7 +3,7 @@ import PeriodChart from "../charts/PeriodChart";
 import Warning from "./Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
 import { validateData } from "./validations/DataValidator";
-import { validateDates, datesInCsv } from "./validations/DateFormatter";
+import { formatDate } from "./validations/DateFormatter";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
@@ -97,6 +97,7 @@ function BaselineReporting(props) {
       }, 15000)
       return;
     }
+    formatDate(inputCsv)
     setInputCsv(inputCsv);
   };
 

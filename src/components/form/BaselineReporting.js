@@ -61,6 +61,7 @@ function BaselineReporting(props) {
 
   useEffect(() => {
     const parseData = async () => {
+
       let parseTime = d3.timeParse("%m/%d/%y %H:%M");
 
       for (const period in formattedData) {
@@ -71,8 +72,6 @@ function BaselineReporting(props) {
           d.eload = +d.eload;
           d.temp = +d.temp;
         });
-
-        console.log(formattedData);
 
         setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
         setCanModel(true);
@@ -105,7 +104,10 @@ function BaselineReporting(props) {
       setFileName(event.target.files[0].name);
       saveData(reader.result)
     };
-    reader.readAsBinaryString(event.target.files[0]);
+
+    if (event.target.files[0] != null) {
+      reader.readAsBinaryString(event.target.files[0]);
+    }
   };
 
   const saveData = async (dataCsv) => {
@@ -118,6 +120,8 @@ function BaselineReporting(props) {
   const validateFile = async () => {
 
     let validation = await validateData(dataMatrix)
+
+    console.log("esta " + validation.result);
 
     if (!validation.result) {
       setDataValidationMsg(validation.message)
@@ -164,7 +168,7 @@ function BaselineReporting(props) {
     let baseline = dataMatrix.slice(0, indexToSplit);
     let reporting = dataMatrix.slice(indexToSplit + 1);
 
-    baseline.shift()
+    baseline.shift() //deletes column names
 
     setSplittedData((current) => ({ ...current, baseline: baseline }));
     setSplittedData((current) => ({ ...current, reporting: reporting }));
@@ -176,6 +180,7 @@ function BaselineReporting(props) {
   };
 
   const saveVectors = async () => {
+
     for (const period in splittedData) {
       let date = [];
       let eload = [];
@@ -186,11 +191,6 @@ function BaselineReporting(props) {
         eload.push(element[1]);
         temp.push(element[2]);
       });
-
-      //deletes column name
-      date.shift();
-      eload.shift();
-      temp.shift();
 
       //parse string to int
       eload = await arrStringToNum(eload);
@@ -221,6 +221,9 @@ function BaselineReporting(props) {
           variant="contained"
           component="label"
           onChange={handleFileChange}
+          onClick={(event) => {
+            event.target.value = null
+          }}
           size="small"
           sx={{ mr: 1 }}
         >

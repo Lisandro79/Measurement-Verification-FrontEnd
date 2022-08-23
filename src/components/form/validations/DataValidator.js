@@ -1,5 +1,6 @@
 const THREE_COLUMNS = 3;
 const ROW_GAP = 2
+const ONE_HOUR = 3600000
 
 export async function validateData(data) {
 
@@ -50,15 +51,11 @@ const validateContent = async (data) => {
       validation.message = `There is an error in row ${idx + ROW_GAP}, please check it and try again`;
       return validation;
     }
+    dates.push(row[0])
   }
 
-  if (!(await validateDateColumn(dates))) {
-    validation.result = false;
-    validation.message = `Date format must be 'M/D/Y H:M'`;
-    return validation;
-  }
+  validation = await validateDateColumn(dates)
 
-  validation.result = true;
   return validation;
 };
 
@@ -75,7 +72,18 @@ const validateDataTypes = async (row) => {
 };
 
 const validateDateColumn = async (dates) => {
-  return dates.every(validateDateFormat);
+
+  let validation = {}
+
+  if (! await dates.every(validateDateFormat)) {
+    validation.message = "Date format must be 'M/D/Y H:M'"
+    validation.result = false
+    return validation
+  }
+
+  validation = await continuousHours(dates)
+
+  return validation
 };
 
 const validateDateFormat = async (date) => {
@@ -84,6 +92,20 @@ const validateDateFormat = async (date) => {
 
   return date.match(regex);
 };
+
+const continuousHours = async (dates) => {
+  let validation = {}
+
+  for (const [idx, date] of dates.slice(1).entries()) {
+    if (!(((new Date(date)) - new Date(dates[idx])) === ONE_HOUR)) {
+      validation.message = `There is one hour missing near row ${idx + ROW_GAP}`
+      validation.result = false
+      return validation
+    }
+  }
+  
+  return true
+}
 
 export async function validateDates(dates, data) {
 
@@ -126,8 +148,6 @@ const areDatesInData = async (dates, data) => {
 
   let validation = {}
 
-  console.log(dates);
-
   for (let key in dates) {
 
     const found = data
@@ -145,5 +165,3 @@ const areDatesInData = async (dates, data) => {
   validation.result = true
   return validation
 }
-
-

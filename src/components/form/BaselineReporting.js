@@ -18,7 +18,7 @@ function BaselineReporting(props) {
   const [dataCsv, setDataCsv] = useState(null);
   const [dataMatrix, setDataMatrix] = useState(null)
 
-  const [fieldsCompleted, setFieldsCompleted] = useState(false);
+  const [dataValidations, setDataValidations] = useState(false);
   const [canModel, setCanModel] = useState(false);
   const [canCheck, setCanCheck] = useState(false);
 
@@ -34,13 +34,13 @@ function BaselineReporting(props) {
 
   useEffect(() => {
     if (
-      dataCsv != null &&
+      dataCsv &&
       props.projectData.dates.start_baseline &&
       props.projectData.dates.end_baseline &&
       props.projectData.dates.start_reporting &&
       props.projectData.dates.end_reporting
     ) {
-      setFieldsCompleted(true);
+      setCanCheck(true);
     }
   }, [props.projectData, dataCsv]);
 
@@ -131,11 +131,11 @@ function BaselineReporting(props) {
     }
 
     let parsedDates = await formatDate(dataMatrix)
-    let dataCsv = await arrayToCsv(parsedDates)
+    //let dataCsv = await arrayToCsv(parsedDates)
 
     if(validation.result){
-      saveData(dataCsv)
-      setCanCheck(true)
+      //saveData(dataCsv)
+      setDataValidations(true)
     }
 
   };

@@ -20,6 +20,7 @@ function BaselineReporting(props) {
 
   const [fieldsCompleted, setFieldsCompleted] = useState(false);
   const [canModel, setCanModel] = useState(false);
+  const [canCheck, setCanCheck] = useState(false);
 
   const [parsedData, setParsedData] = useState({});
   const [splittedData, setSplittedData] = useState({});
@@ -33,7 +34,7 @@ function BaselineReporting(props) {
 
   useEffect(() => {
     if (
-      dataCsv &&
+      dataCsv != null &&
       props.projectData.dates.start_baseline &&
       props.projectData.dates.end_baseline &&
       props.projectData.dates.start_reporting &&
@@ -121,8 +122,6 @@ function BaselineReporting(props) {
 
     let validation = await validateData(dataMatrix)
 
-    console.log("esta " + validation.result);
-
     if (!validation.result) {
       setDataValidationMsg(validation.message)
       setTimeout(() => {
@@ -134,7 +133,11 @@ function BaselineReporting(props) {
     let parsedDates = await formatDate(dataMatrix)
     let dataCsv = await arrayToCsv(parsedDates)
 
-    setDataCsv(dataCsv);
+    if(validation.result){
+      saveData(dataCsv)
+      setCanCheck(true)
+    }
+
   };
 
   const checkData = async () => {
@@ -311,7 +314,7 @@ function BaselineReporting(props) {
         <Button
           sx={{ my: 2 }}
           variant="contained"
-          disabled={fieldsCompleted ? false : true}
+          disabled={canCheck ? false : true}
           onClick={checkData}
         >
           Check data

@@ -104,7 +104,8 @@ const continuousHours = async (dates) => {
     }
   }
   
-  return true
+  validation.result = true
+  return validation
 }
 
 export async function validateDates(dates, data) {

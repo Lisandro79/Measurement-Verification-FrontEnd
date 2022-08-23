@@ -143,7 +143,7 @@ function ProjectInfo(props) {
         <Button
           sx={{ my: 2 }}
           variant="contained"
-          //disabled={fieldsCompleted ? false : true}
+          disabled={fieldsCompleted ? false : true}
           onClick={props.nextFormStep}
         >
           Next

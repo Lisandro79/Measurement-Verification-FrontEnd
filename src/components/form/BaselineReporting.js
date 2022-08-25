@@ -83,7 +83,7 @@ function BaselineReporting(props) {
     }
 
     if (validation.result) {
-      setPlotErrorMsg(validation.message)
+      setPlotErrorMsg(null)
       let splittedData = await splitData()
       await parseData(splittedData)
       setCanModel(true)

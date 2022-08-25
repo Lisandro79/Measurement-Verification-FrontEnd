@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./assets/App.css";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/layout/Navbar";
 import BaselineReporting from "./components/form/BaselineReporting";
 import Model from "./components/form/Model";
 import ProjectInfo from "./components/form/ProjectInfo";
@@ -34,7 +34,6 @@ const App = () => {
       start_reporting: "",
       end_reporting: "",
     },
-    
   });
 
   const nextFormStep = () => {

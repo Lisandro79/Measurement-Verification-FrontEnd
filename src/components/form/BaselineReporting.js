@@ -1,40 +1,33 @@
 import React, { useState, useEffect, useRef } from "react";
 import PeriodChart from "../charts/PeriodChart";
-import Warning from "./Warning";
+import Warning from "../layout/Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
 import { validateData, validateDates } from "./validations/DataValidator";
-import { formatDate } from "./validations/DateFormatter";
 import * as d3 from "d3";
 import CsvSpecs from "../../components/text/CsvSpecs";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import DateInput from "./inputs/DateInput";
 
 const csvParser = require("jquery-csv");
 
 function BaselineReporting(props) {
 
-  const isFirstRender = useRef(true);
+  const [matrixData, setMatrixData] = useState(null)
+  const [periodsData, setPeriodsData] = useState(null)
 
-  const [dataCsv, setDataCsv] = useState(null);
-  const [dataMatrix, setDataMatrix] = useState(null)
-
-  const [dataValidations, setDataValidations] = useState(false);
-  const [canModel, setCanModel] = useState(false);
   const [canCheck, setCanCheck] = useState(false);
+  const [canModel, setCanModel] = useState(false);  
 
   const [parsedData, setParsedData] = useState({});
-  const [splittedData, setSplittedData] = useState({});
-  const [formattedData, setFormattedData] = useState({});
 
   const [fileName, setFileName] = useState(null);
 
-  const [dataValidationMsg, setDataValidationMsg] = useState(null);
+  const [dataValidationErrorMsg, setDataValidationErrorMsg] = useState(null);
   const [plotErrorMsg, setPlotErrorMsg] = useState(null);
-  const [modelErrorMsg, setModelErrorMsg] = useState(null);
 
   useEffect(() => {
     if (
-      dataCsv &&
+      matrixData &&
       props.projectData.dates.start_baseline &&
       props.projectData.dates.end_baseline &&
       props.projectData.dates.start_reporting &&
@@ -42,59 +35,11 @@ function BaselineReporting(props) {
     ) {
       setCanCheck(true);
     }
-  }, [props.projectData, dataCsv]);
-
-  useEffect(() => {
-    const formatData = async () => {
-      if (Object.keys(splittedData).length === 2) {
-        let baseline = await arrayToCsv(splittedData.baseline);
-        let reporting = await arrayToCsv(splittedData.reporting);
-        baseline = "time,eload,temp\n" + baseline;
-        reporting = "time,eload,temp\n" + reporting;
-
-        setFormattedData((current) => ({ ...current, baseline: baseline }));
-        setFormattedData((current) => ({ ...current, reporting: reporting }));
-      }
-      return;
-    };
-    formatData();
-  }, [splittedData.baseline, splittedData.reporting]);
-
-  useEffect(() => {
-    const parseData = async () => {
-
-      let parseTime = d3.timeParse("%m/%d/%y %H:%M");
-
-      for (const period in formattedData) {
-        let parsedPeriod = d3.csvParse(formattedData[period]);
-
-        parsedPeriod.forEach((d) => {
-          d.time = parseTime(d.time);
-          d.eload = +d.eload;
-          d.temp = +d.temp;
-        });
-
-        setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
-        setCanModel(true);
-      }
-      return;
-    };
-    parseData();
-  }, [formattedData.baseline, formattedData.reporting]);
+  }, [props.projectData, matrixData]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    validateFile()
-
-  }, [dataMatrix])
 
   const handleFileChange = async (event) => {
     event.preventDefault();
@@ -112,70 +57,92 @@ function BaselineReporting(props) {
   };
 
   const saveData = async (dataCsv) => {
-    setDataCsv(dataCsv)
 
-    let dataMatrix = await csvParser.toArrays(dataCsv)
-    setDataMatrix(dataMatrix)
-  }
+    let matrixData = await csvParser.toArrays(dataCsv)
 
-  const validateFile = async () => {
-
-    let validation = await validateData(dataMatrix)
+    let validation = await validateData(matrixData)
 
     if (!validation.result) {
-      setDataValidationMsg(validation.message)
-      setTimeout(() => {
-        setDataValidationMsg(null)
-      }, 15000)
+      setDataValidationErrorMsg(validation.message)
       return;
     }
 
-    let parsedDates = await formatDate(dataMatrix)
-    //let dataCsv = await arrayToCsv(parsedDates)
-
-    if(validation.result){
-      //saveData(dataCsv)
-      setDataValidations(true)
+    if (validation.result) {
+      setDataValidationErrorMsg(null)
+      setMatrixData(matrixData)
     }
-
-  };
+  }
 
   const checkData = async () => {
 
-    let validation = await validateDates(props.projectData.dates, dataMatrix)
+    let validation = await validateDates(props.projectData.dates, matrixData)
 
     if (!validation.result) {
       setPlotErrorMsg(validation.message)
-      setTimeout(() => {
-        setPlotErrorMsg(null)
-      }, 15000)
-    } else {
-      splitData()
+      return
     }
 
+    if (validation.result) {
+      setPlotErrorMsg(validation.message)
+      let splittedData = await splitData()
+      await parseData(splittedData)
+      setCanModel(true)
+    }
+    return
   };
 
-  const splitData = () => {
+  const splitData = async () => {
 
     const startReportingDate = new Date(
       props.projectData.dates.start_reporting
     );
 
-    const limit = dataMatrix
+    const limit = matrixData
       .slice(1)
       .find(
         (element) => new Date(element[0]).getTime() == startReportingDate.getTime()
       );
 
-    let indexToSplit = dataMatrix.indexOf(limit);
-    let baseline = dataMatrix.slice(0, indexToSplit);
-    let reporting = dataMatrix.slice(indexToSplit + 1);
+    let indexToSplit = matrixData.indexOf(limit);
+    let baseline = matrixData.slice(0, indexToSplit);
+    let reporting = matrixData.slice(indexToSplit + 1);
 
     baseline.shift() //deletes column names
 
-    setSplittedData((current) => ({ ...current, baseline: baseline }));
-    setSplittedData((current) => ({ ...current, reporting: reporting }));
+    let splittedData = {
+      baseline: baseline,
+      reporting: reporting
+    }
+
+    setPeriodsData(splittedData)
+    return splittedData
   };
+
+  const parseData = async (data) => {
+
+    let parsedData = {}
+
+    parsedData.baseline = await arrayToCsv(data.baseline);
+    parsedData.reporting = await arrayToCsv(data.reporting);
+
+    parsedData.baseline = "time,eload,temp\n" + parsedData.baseline;
+    parsedData.reporting = "time,eload,temp\n" + parsedData.reporting;
+
+    let parseTime = d3.timeParse("%m/%d/%y %H:%M");
+
+    for (const period in parsedData) {
+      let parsedPeriod = d3.csvParse(parsedData[period]);
+
+      parsedPeriod.forEach((d) => {
+        d.time = parseTime(d.time);
+        d.eload = +d.eload;
+        d.temp = +d.temp;
+      });
+
+      setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
+    }
+    return
+  }
 
   const onClickModel = async () => {
     await saveVectors();
@@ -184,12 +151,12 @@ function BaselineReporting(props) {
 
   const saveVectors = async () => {
 
-    for (const period in splittedData) {
+    for (const period in periodsData) {
       let date = [];
       let eload = [];
       let temp = [];
 
-      splittedData[period].forEach((element) => {
+      periodsData[period].forEach((element) => {
         date.push(element[0]);
         eload.push(element[1]);
         temp.push(element[2]);
@@ -212,6 +179,7 @@ function BaselineReporting(props) {
         [`${period}_temp`]: temp,
       }));
     }
+    return
   };
 
   return (
@@ -235,7 +203,7 @@ function BaselineReporting(props) {
         </Button>
         <i>{fileName ? `Uploaded file: ${fileName}` : null}</i>
         <div>
-          <Warning message={dataValidationMsg} />
+          <Warning message={dataValidationErrorMsg} />
         </div>
       </div>
       <div className="item">
@@ -244,16 +212,10 @@ function BaselineReporting(props) {
           <b>Baseline start date</b>
         </p>
         <div>
-          <TextField
-            type="datetime-local"
-            step="3600"
-            name="start_baseline"
+          <DateInput
+            label={"Baseline start date"}
             onChange={props.handleDateChange}
-            label="Baseline start date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            size="small"
+            name="start_baseline"
             value={props.projectData.dates.start_baseline}
           />
         </div>
@@ -261,16 +223,10 @@ function BaselineReporting(props) {
           <b>Baseline end date</b>
         </p>
         <div>
-          <TextField
-            type="datetime-local"
-            step="3600"
+          <DateInput
             name="end_baseline"
             onChange={props.handleDateChange}
             label="Baseline end date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            size="small"
             value={props.projectData.dates.end_baseline}
           />
         </div>
@@ -278,16 +234,10 @@ function BaselineReporting(props) {
           <b>Reporting start date</b>
         </p>
         <div>
-          <TextField
-            type="datetime-local"
-            step="3600"
+          <DateInput
             name="start_reporting"
             onChange={props.handleDateChange}
             label="Reporting start date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            size="small"
             value={props.projectData.dates.start_reporting}
           />
         </div>
@@ -295,16 +245,10 @@ function BaselineReporting(props) {
           <b>Reporting end date</b>
         </p>
         <div>
-          <TextField
-            type="datetime-local"
-            step="3600"
+          <DateInput
             name="end_reporting"
             onChange={props.handleDateChange}
             label="Reporting end date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            size="small"
             value={props.projectData.dates.end_reporting}
           />
         </div>
@@ -340,11 +284,6 @@ function BaselineReporting(props) {
           <PeriodChart data={parsedData.reporting} />
         ) : null}
       </div>
-
-      <div>
-        <Warning message={modelErrorMsg} />
-      </div>
-
 
       <div className="item prev-back">
         <Button sx={{ my: 2 }} variant="contained" onClick={props.prevFormStep}>

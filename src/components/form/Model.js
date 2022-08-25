@@ -7,6 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
 const Model = (props) => {
+
   const isFirstRender = useRef(true);
   const [modelData, setModelData] = useState(null);
   const [chartData, setChartData] = useState(null);
@@ -20,6 +21,8 @@ const Model = (props) => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+
+      console.log(props.projectData);
 
       let response = await model(props.projectData);
 

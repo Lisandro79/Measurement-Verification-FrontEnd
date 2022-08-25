@@ -1,8 +1,9 @@
 import "../../assets/Form.css";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
+import TextInput from "./inputs/TextInput";
+import DateInput from "./inputs/DateInput";
 
 function ProjectInfo(props) {
 
@@ -39,11 +40,8 @@ function ProjectInfo(props) {
         <h1>Project Info</h1>
         <div className="item">
           <h3>Project name</h3>
-          <TextField
-            size="small"
-            id="filled-basic"
-            label="Project name"
-            variant="filled"
+          <TextInput
+            label={"Project name"}
             onChange={props.handleChange}
             name="project_name"
             value={props.projectData.project_name}
@@ -56,22 +54,16 @@ function ProjectInfo(props) {
             building
           </i>
           <div>
-            <TextField
-              size="small"
-              id="filled-basic"
-              label="City"
-              variant="filled"
+            <TextInput
+              label={"City"}
               onChange={props.handleChange}
               name="city"
               value={props.projectData.city}
             />
           </div>
           <div>
-            <TextField
-              size="small"
-              id="filled-basic"
-              label="ZIP Code"
-              variant="filled"
+            <TextInput
+              label={"ZIP Code"}
               onChange={props.handleChange}
               name="zip_code"
               value={props.projectData.zip_code}
@@ -82,11 +74,8 @@ function ProjectInfo(props) {
           <h3>Building type</h3>
           <i>What type of building are you analysing?</i>
           <div>
-            <TextField
-              size="small"
-              id="filled-basic"
-              label="Building type"
-              variant="filled"
+            <TextInput
+              label={"Building type"}
               onChange={props.handleChange}
               name="building_type"
               value={props.projectData.building_type}
@@ -97,14 +86,10 @@ function ProjectInfo(props) {
           <h3>Price of energy</h3>
           <i>How much energy costs in kWh?</i>
           <div>
-            <TextField
-              size="small"
-              id="filled-basic"
-              label="Price in kWh"
-              variant="filled"
+            <TextInput
+              label={"Price in kWh"}
               onChange={props.handleChange}
               name="price_kWh"
-              type="number"
               value={props.projectData.price_kWh}
             />
           </div>
@@ -113,11 +98,8 @@ function ProjectInfo(props) {
           <h3>Type of retrofit</h3>
           <i>What type of energy efficency measures have been performed?</i>
           <div>
-            <TextField
-              size="small"
-              id="filled-basic"
-              label="Meassures installed"
-              variant="filled"
+            <TextInput
+              label={"Meassures installed"}
               onChange={props.handleChange}
               name="measures_installed"
               value={props.projectData.measures_installed}
@@ -126,16 +108,11 @@ function ProjectInfo(props) {
               <i>Date of installation</i>
             </p>
             <div>
-              <TextField
-                type="date"
+              <DateInput
+                label={"Date of installation"}
                 onChange={props.handleChange}
                 name="date_installation"
-                label="Date of installation"
-                InputLabelProps={{
-                  shrink: true,
-                }}
                 value={props.projectData.date_installation}
-                size="small"
               />
             </div>
           </div>

@@ -1,3 +1,4 @@
+import React from "react";
 import "../../assets/Form.css";
 import { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
@@ -6,7 +7,6 @@ import TextInput from "./inputs/TextInput";
 import DateInput from "./inputs/DateInput";
 
 function ProjectInfo(props) {
-
   const [fieldsCompleted, setFieldsCompleted] = useState(false);
 
   useEffect(() => {
@@ -24,8 +24,8 @@ function ProjectInfo(props) {
   }, [props.projectData]);
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <Box

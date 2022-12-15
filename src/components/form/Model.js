@@ -1,13 +1,13 @@
+import React from "react";
 import { useEffect, useState, useRef } from "react";
 import ModelChart from "../charts/ModelChart";
 import * as d3 from "d3";
 import { model } from "../../api/model";
 import Button from "@mui/material/Button";
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 
 const Model = (props) => {
-
   const isFirstRender = useRef(true);
   const [modelData, setModelData] = useState(null);
   const [chartData, setChartData] = useState(null);
@@ -15,8 +15,8 @@ const Model = (props) => {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,9 +42,8 @@ const Model = (props) => {
       return;
     }
     const parseData = async () => {
-
-      let baseline = await parseBaseline(modelData)
-      let reporting = await parseReporting(modelData)
+      let baseline = await parseBaseline(modelData);
+      let reporting = await parseReporting(modelData);
 
       let chartData = baseline.concat(reporting);
 
@@ -56,7 +55,6 @@ const Model = (props) => {
     parseData();
   }, [modelData]);
 
-
   const parseBaseline = async (data) => {
     let result = [];
     let parseTime = d3.timeParse("%m/%d/%y %H:%M");
@@ -66,12 +64,12 @@ const Model = (props) => {
         datetime: parseTime(date),
         baseline_eload: +data.baseline_eload[index],
         reporting_eload: 0,
-        reporting_counterfactual_usage: 0
-      }
-      result.push(aux)
-    })
-    return result
-  }
+        reporting_counterfactual_usage: 0,
+      };
+      result.push(aux);
+    });
+    return result;
+  };
 
   const parseReporting = async (data) => {
     let result = [];
@@ -82,12 +80,13 @@ const Model = (props) => {
         datetime: parseTime(date),
         baseline_eload: 0,
         reporting_eload: +data.reporting_eload[index],
-        reporting_counterfactual_usage: +data.reporting_counterfactual_usage[index]
-      }
-      result.push(aux)
-    })
-    return result
-  }
+        reporting_counterfactual_usage:
+          +data.reporting_counterfactual_usage[index],
+      };
+      result.push(aux);
+    });
+    return result;
+  };
 
   return (
     <div className="model-chart">
@@ -99,7 +98,7 @@ const Model = (props) => {
           <h4>{errorMsg}</h4>
         )}
         {isLoading ? (
-          <Box sx={{ display: 'flex' }}>
+          <Box sx={{ display: "flex" }}>
             <CircularProgress />
           </Box>
         ) : (

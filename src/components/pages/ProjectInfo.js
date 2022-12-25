@@ -3,8 +3,8 @@ import "../../assets/Form.css";
 import { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import TextInput from "./inputs/TextInput";
-import DateInput from "./inputs/DateInput";
+import TextInput from "../form/inputs/TextInput";
+import DateInput from "../form/inputs/DateInput";
 
 function ProjectInfo(props) {
   const [fieldsCompleted, setFieldsCompleted] = useState(false);

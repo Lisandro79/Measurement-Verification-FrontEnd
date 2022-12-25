@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import PeriodChart from "../charts/PeriodChart";
-import Warning from "../layout/Warning";
+import Warning from "../ui/Warning";
 import { arrayToCsv, arrStringToNum } from "../../utils/utils";
-import { validateData, validateDates } from "./validations/DataValidator";
+import { validateData, validateDates } from "../form/validations/DataValidator";
 import * as d3 from "d3";
-import CsvSpecs from "../../components/text/CsvSpecs";
+import CsvSpecs from "../text/CsvSpecs";
 import Button from "@mui/material/Button";
-import DateInput from "./inputs/DateInput";
+import DateInput from "../form/inputs/DateInput";
 
 const csvParser = require("jquery-csv");
 
 function BaselineReporting(props) {
-
-  const [matrixData, setMatrixData] = useState(null)
-  const [periodsData, setPeriodsData] = useState(null)
+  const [matrixData, setMatrixData] = useState(null);
+  const [periodsData, setPeriodsData] = useState(null);
 
   const [canCheck, setCanCheck] = useState(false);
-  const [canModel, setCanModel] = useState(false);  
+  const [canModel, setCanModel] = useState(false);
 
   const [parsedData, setParsedData] = useState({});
 
@@ -48,7 +47,7 @@ function BaselineReporting(props) {
 
     reader.onload = function () {
       setFileName(event.target.files[0].name);
-      saveData(reader.result)
+      saveData(reader.result);
     };
 
     if (event.target.files[0] != null) {
@@ -57,42 +56,39 @@ function BaselineReporting(props) {
   };
 
   const saveData = async (dataCsv) => {
+    let matrixData = await csvParser.toArrays(dataCsv);
 
-    let matrixData = await csvParser.toArrays(dataCsv)
-
-    let validation = await validateData(matrixData)
+    let validation = await validateData(matrixData);
 
     if (!validation.result) {
-      setDataValidationErrorMsg(validation.message)
+      setDataValidationErrorMsg(validation.message);
       return;
     }
 
     if (validation.result) {
-      setDataValidationErrorMsg(null)
-      setMatrixData(matrixData)
+      setDataValidationErrorMsg(null);
+      setMatrixData(matrixData);
     }
-  }
+  };
 
   const checkData = async () => {
-
-    let validation = await validateDates(props.projectData.dates, matrixData)
+    let validation = await validateDates(props.projectData.dates, matrixData);
 
     if (!validation.result) {
-      setPlotErrorMsg(validation.message)
-      return
+      setPlotErrorMsg(validation.message);
+      return;
     }
 
     if (validation.result) {
-      setPlotErrorMsg(null)
-      let splittedData = await splitData()
-      await parseData(splittedData)
-      setCanModel(true)
+      setPlotErrorMsg(null);
+      let splittedData = await splitData();
+      await parseData(splittedData);
+      setCanModel(true);
     }
-    return
+    return;
   };
 
   const splitData = async () => {
-
     const startReportingDate = new Date(
       props.projectData.dates.start_reporting
     );
@@ -100,27 +96,27 @@ function BaselineReporting(props) {
     const limit = matrixData
       .slice(1)
       .find(
-        (element) => new Date(element[0]).getTime() == startReportingDate.getTime()
+        (element) =>
+          new Date(element[0]).getTime() == startReportingDate.getTime()
       );
 
     let indexToSplit = matrixData.indexOf(limit);
     let baseline = matrixData.slice(0, indexToSplit);
     let reporting = matrixData.slice(indexToSplit + 1);
 
-    baseline.shift() //deletes column names
+    baseline.shift(); //deletes column names
 
     let splittedData = {
       baseline: baseline,
-      reporting: reporting
-    }
+      reporting: reporting,
+    };
 
-    setPeriodsData(splittedData)
-    return splittedData
+    setPeriodsData(splittedData);
+    return splittedData;
   };
 
   const parseData = async (data) => {
-
-    let parsedData = {}
+    let parsedData = {};
 
     parsedData.baseline = await arrayToCsv(data.baseline);
     parsedData.reporting = await arrayToCsv(data.reporting);
@@ -141,8 +137,8 @@ function BaselineReporting(props) {
 
       setParsedData((current) => ({ ...current, [period]: parsedPeriod }));
     }
-    return
-  }
+    return;
+  };
 
   const onClickModel = async () => {
     await saveVectors();
@@ -150,7 +146,6 @@ function BaselineReporting(props) {
   };
 
   const saveVectors = async () => {
-
     for (const period in periodsData) {
       let date = [];
       let eload = [];
@@ -179,7 +174,7 @@ function BaselineReporting(props) {
         [`${period}_temp`]: temp,
       }));
     }
-    return
+    return;
   };
 
   return (
@@ -193,7 +188,7 @@ function BaselineReporting(props) {
           component="label"
           onChange={handleFileChange}
           onClick={(event) => {
-            event.target.value = null
+            event.target.value = null;
           }}
           size="small"
           sx={{ mr: 1 }}
